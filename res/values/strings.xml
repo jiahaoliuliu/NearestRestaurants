@@ -9,5 +9,11 @@
     <string name="users_position">Your actual position</string>
     <string name="looking_users_position">Looking for your position</string>
     
+    <!-- Messages -->
     <string name="error_message_google_map_not_found">Google Maps not found. Your device is not compatible with this application.</string>
+    <string name="message_request_ok">Response receiverd correctly</string>
+    <string name="error_message_internet_connection">It seems that there is not Internet connection. Could you check it?</string>
+    <string name="error_message_server_generic">It seems that there is some problem with the server. Please try it again later.</string>
+    <string name="error_message_data_invalid">The data received does not seem valid.</string>
+    
 </resources>

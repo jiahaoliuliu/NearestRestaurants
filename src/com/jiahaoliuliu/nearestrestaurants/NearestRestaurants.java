@@ -130,6 +130,8 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			googleMap.animateCamera(
 					CameraUpdateFactory.newLatLngZoom(myPosition, DEFAULT_ZOOM_LEVEL));
 			positionSetAtFirstTime = false;
+			
+			// Ask Google about the restaurants near to me.
 		}
 	}
 }
