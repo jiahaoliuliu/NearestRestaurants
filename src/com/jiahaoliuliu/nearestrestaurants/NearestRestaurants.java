@@ -12,11 +12,4 @@ public class NearestRestaurants extends Activity {
 		setContentView(R.layout.nearest_restaurants_layout);
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.nearest_restaurants, menu);
-		return true;
-	}
-
 }
