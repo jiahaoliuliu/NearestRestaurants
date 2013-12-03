@@ -11,6 +11,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestJSONCallback;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
 import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.DoubleId;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.StringId;
@@ -105,6 +107,23 @@ public final class Session {
 
     //=========================================== Basic methods ==============================
 
+	public void getRestaurantsNearby(LatLng myPosition,
+			final RequestRestaurantsCallback requestRestaurantsCallback) {
+		service.getRestaurantsNearby(myPosition, new RequestJSONCallback() {
+			
+			@Override
+			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
+				if (!ErrorHandler.isError(requestStatus)) {
+					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
+				} else {
+					requestRestaurantsCallback.done(null,
+							ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+							requestStatus);
+				}
+			}
+		});
+	}
+
     //=========================================== Getters and setters ==============================
     /*
     private Service getService() {
@@ -134,4 +153,5 @@ public final class Session {
     private void setPreferences(Preferences preferences) {
         this.preferences = preferences;
     }
+
 }

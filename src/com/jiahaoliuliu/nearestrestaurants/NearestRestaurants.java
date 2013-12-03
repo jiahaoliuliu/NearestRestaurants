@@ -1,5 +1,7 @@
 package com.jiahaoliuliu.nearestrestaurants;
 
+import java.util.List;
+
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -8,6 +10,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
+import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
+import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
+import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler;
+import com.jiahaoliuliu.nearestrestaurants.session.Session;
 import com.jiahaoliuliu.nearestrestaurants.utils.PositionTracker;
 
 import android.content.BroadcastReceiver;
@@ -25,6 +32,9 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	// System data
 	private Context context;
 	private ActionBar actionBar;
+
+	// Session
+	private Session session;
 
 	// Maps
 	private GoogleMap googleMap;
@@ -44,6 +54,8 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 
         context = this;
         actionBar = getSupportActionBar();
+        
+        session = Session.getCurrentSession(context);
 
         // Get the map
         googleMap = ((SupportMapFragment) 
@@ -85,7 +97,8 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			// Update the position
 			myPosition = new LatLng(latitude, longitude);
 			drawUsersNewPositionOnMaps();
-
+			updateRestaurants();
+			
 			// Disable the progress bar
 			setProgressBarIndeterminateVisibility(false);
 		}
@@ -130,8 +143,30 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			googleMap.animateCamera(
 					CameraUpdateFactory.newLatLngZoom(myPosition, DEFAULT_ZOOM_LEVEL));
 			positionSetAtFirstTime = false;
-			
-			// Ask Google about the restaurants near to me.
 		}
 	}
-}
+	
+	/**
+	 * Update the list of the restaurants based on the position of the user
+	 */
+	private void updateRestaurants() {
+		if (myPosition == null) {
+			Log.e(LOG_TAG, "Trying to update the list of the restaurants when the position of the user is unknown.");
+			return;
+		}
+		
+		
+		session.getRestaurantsNearby(myPosition, new RequestRestaurantsCallback() {
+			
+			@Override
+			public void done(List<Restaurant> restaurants, String errorMessage,
+					RequestStatus requestStatus) {
+				if (!ErrorHandler.isError(requestStatus)) {
+					Log.v(LOG_TAG, "List of the restaurants returned correctly");
+				} else {
+					Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+				}
+			}
+		});
+	}
+ }
