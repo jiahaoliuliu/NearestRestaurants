@@ -31,9 +31,9 @@ import android.view.ContextMenu;
 import android.view.View;
 import android.widget.Toast;
 
-public class NearestRestaurants extends SherlockFragmentActivity {
+public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 
-	private static final String LOG_TAG = NearestRestaurants.class.getSimpleName();
+	private static final String LOG_TAG = NearestRestaurantsMaps.class.getSimpleName();
 
 	// System data
 	private Context context;
@@ -60,7 +60,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.nearest_restaurants_layout);
+        setContentView(R.layout.nearest_restaurants_maps_layout);
 
         context = this;
         actionBar = getSupportActionBar();

@@ -160,7 +160,7 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
     	
     	if (item.getItemId() == MENU_MAPS_BUTTON_ID) {
     		// Go to Maps
-    		Intent startMapsIntent = new Intent(this, NearestRestaurants.class);
+    		Intent startMapsIntent = new Intent(this, NearestRestaurantsMaps.class);
     		startActivity(startMapsIntent);
     	}
     	
