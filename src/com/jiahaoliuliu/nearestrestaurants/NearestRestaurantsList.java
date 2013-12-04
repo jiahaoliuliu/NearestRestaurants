@@ -21,9 +21,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.BaseAdapter;
 
 public class NearestRestaurantsList extends SherlockFragmentActivity {
 
@@ -37,6 +41,10 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 
 	// Session
 	private Session session;
+
+	// Layout
+	private ListView listView;
+	private RestaurantListAdapter restaurantListAdapter;
 
 	// The broadcast receiver for the position
 	private PositionTracker positionTracker;
@@ -53,6 +61,9 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
         actionBar = getSupportActionBar();
         
         session = Session.getCurrentSession(context);
+
+        // Layout
+        listView = (ListView)findViewById(R.id.listView);
 
 		// Show that it is waiting for the user's position
 		setProgressBarIndeterminateVisibility(true);
@@ -136,7 +147,14 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 					RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "List of the restaurants returned correctly");
-
+					// Check if the restaurant list adapter exists before
+					// If not
+					if (restaurantListAdapter == null) {
+						restaurantListAdapter = new RestaurantListAdapter(context, restaurants);
+						listView.setAdapter(restaurantListAdapter);
+					} else {
+						restaurantListAdapter.setRestaurants(restaurants);
+					}
 				} else {
 					Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 				}
@@ -167,4 +185,55 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
         return true;
     }
 
+    private class RestaurantListAdapter extends BaseAdapter {
+    	
+    	private Context context;
+    	private List<Restaurant> restaurants;
+    	private LayoutInflater inflater;
+    	
+    	public RestaurantListAdapter(Context context, List<Restaurant> restaurants) {
+    		this.context = context;
+    		this.restaurants = restaurants;
+    		inflater = LayoutInflater.from(context);
+    	}
+
+    	// Reset the list of the restaurants
+    	public void setRestaurants(List<Restaurant> restaurants) {
+    		this.restaurants = restaurants;
+    		notifyDataSetChanged();
+    	}
+
+		@Override
+		public int getCount() {
+			return restaurants.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return restaurants.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup viewGroup) {
+			
+			// No view holder is used because the time restriction
+			View view = inflater.inflate(R.layout.row_layout, null);
+			
+			TextView restaurantTextView = (TextView)view.findViewById(R.id.restaurantNameTextView);
+			Restaurant restaurant = restaurants.get(position);
+			
+			String name = restaurant.getName();
+			if (name != null && !name.equalsIgnoreCase("")) {
+				restaurantTextView.setText(name);
+			}
+
+			return view;
+		}
+    	
+    }
  }
