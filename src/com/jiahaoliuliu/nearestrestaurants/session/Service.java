@@ -45,11 +45,7 @@ public class Service {
     // Sensor
     private static final String SENSOR_KEY = "sensor";
     private static final String SENSOR_VALUE = "false"; // Because the sensor is always false, it is better to save it as String
-    
-    // Rankby (By distance)
-    private static final String RANKBY_KEY = "rankby";
-    private static final String RANKBY_VALUE = "distance";
-    
+
     // Types (Restaurant)
     private static final String TYPES_KEY = "types";
     private static final String TYPES_VALUE = "restaurant";
@@ -75,7 +71,6 @@ public class Service {
         parameters.put(LOCATION_KEY, myPosition.latitude + "," + myPosition.longitude);
         parameters.put(RADIUS_KEY, RADIUS_VALUE);
         parameters.put(SENSOR_KEY, SENSOR_VALUE);
-        //parameters.put(RANKBY_KEY, RANKBY_VALUE);
         parameters.put(TYPES_KEY, TYPES_VALUE);
 
         HttpRequest httpRequest = HttpRequest.create(finalUri, RESTAURANTS_NEARBY_REQUEST_METHOD, parameters);

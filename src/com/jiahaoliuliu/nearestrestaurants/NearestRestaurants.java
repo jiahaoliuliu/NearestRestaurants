@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -25,6 +27,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.View;
 import android.widget.Toast;
 
 public class NearestRestaurants extends SherlockFragmentActivity {
@@ -198,4 +202,22 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			}
 		});
 	}
+	
+	// Use the action bar to switch views
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        menu.add("List")
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //This uses the imported MenuItem from ActionBarSherlock
+        Toast.makeText(this, "Got click: " + item.toString(), Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
  }
