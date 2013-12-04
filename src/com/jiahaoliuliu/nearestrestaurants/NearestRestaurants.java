@@ -1,11 +1,13 @@
 package com.jiahaoliuliu.nearestrestaurants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -39,6 +41,8 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	// Maps
 	private GoogleMap googleMap;
 	private static final int DEFAULT_ZOOM_LEVEL = 12;
+	// The list of the restaurants
+	private List<Marker> restaurantMarkers;
 	
 	// The broadcast receiver for the position
 	private PositionTracker positionTracker;
@@ -145,7 +149,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			positionSetAtFirstTime = false;
 		}
 	}
-	
+
 	/**
 	 * Update the list of the restaurants based on the position of the user
 	 */
@@ -155,6 +159,13 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			return;
 		}
 
+		// Remove any previous markers
+		if (restaurantMarkers != null) {
+			for (Marker marker : restaurantMarkers) {
+				marker.remove();
+			}
+		}
+
 		session.getRestaurantsNearby(myPosition, new RequestRestaurantsCallback() {
 			
 			@Override
@@ -162,6 +173,25 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 					RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "List of the restaurants returned correctly");
+					
+					restaurantMarkers = new ArrayList<Marker>();
+					for (Restaurant restaurant: restaurants) {
+						Log.v(LOG_TAG, "Restaurant returned " + restaurant.toString());
+						
+						if (restaurant.getPosition() == null) {
+							Log.w(LOG_TAG, "The position of the restaurant is unknown " + restaurant);
+							continue;
+						}
+						
+						Marker marker = googleMap.addMarker(
+								new MarkerOptions()
+									.title(restaurant.getName())
+									.position(restaurant.getPosition())
+									// Use different color for the icon of the restaurant
+									.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+								);
+						restaurantMarkers.add(marker);
+					}
 				} else {
 					Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 				}

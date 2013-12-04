@@ -13,6 +13,7 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestJSONCallback;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
+import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
 import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.DoubleId;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.StringId;
@@ -115,6 +116,23 @@ public final class Session {
 			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
+					List<Restaurant> restaurants = new ArrayList<Restaurant>();
+					
+					try {
+						// Parse the list of the restaurants
+						for (int i = 0; i < jsonArray.length(); i++) {
+							Restaurant restaurant = new Restaurant(jsonArray.get(i).toString());
+							restaurants.add(restaurant);
+						}
+						
+						// If everything went OK, return it.
+						requestRestaurantsCallback.done(restaurants, null, RequestStatus.REQUEST_OK);
+					} catch (JSONException e) {
+						Log.e(LOG_TAG, "Error parsing the restaurant returned by Google " + jsonArray.toString());
+						requestRestaurantsCallback.done(null,
+								ErrorHandler.parseRequestStatus(context, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION),
+								RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+					}
 				} else {
 					requestRestaurantsCallback.done(null,
 							ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
