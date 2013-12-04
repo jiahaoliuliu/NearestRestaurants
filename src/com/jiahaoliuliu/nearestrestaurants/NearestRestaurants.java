@@ -154,8 +154,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			Log.e(LOG_TAG, "Trying to update the list of the restaurants when the position of the user is unknown.");
 			return;
 		}
-		
-		
+
 		session.getRestaurantsNearby(myPosition, new RequestRestaurantsCallback() {
 			
 			@Override

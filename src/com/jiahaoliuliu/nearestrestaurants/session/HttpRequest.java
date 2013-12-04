@@ -234,18 +234,38 @@ public class HttpRequest {
 	                            try {
 	                                // For latin languages, the codification must be ISO 8859-1(ISO-8859-1)
 	                                //http://es.wikipedia.org/wiki/ISO_8859-1
-	                            	Log.v(HttpRequest.LOG_TAG, Arrays.toString(data));
 	                                String jsonString = new String(data, "ISO-8859-1");
 	                                Log.v(HttpRequest.LOG_TAG, jsonString);
 	                                // Parsing json data
 	                                // If there is not error, it returns a json object
 	                                if (!ErrorHandler.isError(requestStatus)) {
-	                                	// The server could return an json array, which will be encapsulated
-	                                	// inside of an json object
-                                		JSONArray jsonArray = new JSONArray(jsonString);
-		                                jsonHandler.done(jsonArray, requestStatus);
-		                            // If there is any error, it returns an array of json object
-		                            // which only the first one will be considered
+	                                	// Check the Result returned by Google
+	                                	JSONObject jsonObject = new JSONObject(jsonString);
+	                                	// Check the status
+	                                	if (jsonObject.has("status")) {
+	                                		String resultStatus = jsonObject.getString("status");
+	                                		// If the result status is not ok, then something went wrong
+	                                		if (!resultStatus.equalsIgnoreCase("OK")) {
+	                                			Log.e(LOG_TAG, "The result returned is not ok " + resultStatus);
+	                                			jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                			return;
+	                                		}
+	                                		
+	                                		// if the result is not found, return error
+	                                		if (!jsonObject.has("results")) {
+	                                			Log.e(LOG_TAG, "The results does not exist");
+	                                			jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                			return;
+	                                		}
+	                                		
+	                                		JSONArray jsonArray = new JSONArray(jsonObject.getString("results"));
+			                                jsonHandler.done(jsonArray, requestStatus);
+	                                		
+	                                	// if the status does not exists, then there must be some data error
+	                                	} else {
+	                                		Log.e(LOG_TAG, "The status does not exist.");
+	                                		jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                	}
 	                                } else {
 	                                	jsonHandler.done(null, requestStatus);
 	                                }
