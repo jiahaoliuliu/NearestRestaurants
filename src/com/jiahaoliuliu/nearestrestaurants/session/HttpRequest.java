@@ -4,10 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,7 +18,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -41,6 +38,7 @@ import android.util.Log;
 
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestDataCallback;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestJSONCallback;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestStringCallback;
 import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler;
 import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
 
@@ -56,13 +54,8 @@ public class HttpRequest {
 
     private static final HashMap<String, String> DEFAULT_HEADER_FIELDS = new HashMap<String, String>();
     private static final HashMap<String, String> DEFAULT_PARAMETERS = null;
-    
-    // The position of the error in the array of errors which is considered
-    private static final int ERROR_ARRAY_POSITION_CONSIDERED = 0;
 
     private RequestStatus requestStatus = RequestStatus.REQUEST_OK;
-    
-    public static final String JSON_OBJECT_KEY= "jsonObjectKey";
 
     /**
      * Enumerated data which represents the REST methods used in the Request.
@@ -160,7 +153,6 @@ public class HttpRequest {
     /**
      * The method used to create an instance of HttpRequest
      * @param uri           The URI of the server
-     * @param userLocale    The user locale information. Includes the language
      * @param parameters    The list of the parameters used
      * @param requestMethod The request method
      * @return              An instance of HttpRequest
@@ -191,26 +183,6 @@ public class HttpRequest {
 	}
 
     /**
-     * Method used to send request to the server, which returns an array of bytes.
-     * @param requestDataCallback The callback to call when the communication finishes
-     */
-    protected void performRequestWithHandler(final RequestDataCallback requestDataCallback) {
-        serverFetcher = new ServerFetcher(requestMethod, uri, parameters, entity, headerFields, new RequestDataCallback() {
-            @Override
-            public void done(final byte[] data, final RequestStatus requestStatus) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(LOG_TAG, "Request to " + uri.toString() + "done");
-                        requestDataCallback.done(data, requestStatus);
-                    }
-                });
-            }
-        });
-        threadPool.execute(serverFetcher);
-    }
-
-    /**
      * Method used to send request to the server, which parse the content returned to a json object.
      * @param jsonHandler The callback to call when the communication finishes.
      */
@@ -222,25 +194,24 @@ public class HttpRequest {
 
         serverFetcher = new ServerFetcher(requestMethod, uri,
                 parameters, entity, headerFields,
-                new RequestDataCallback() {
+                new RequestStringCallback() {
 
                 @Override
-                public void done(final byte[] data, final RequestStatus requestStatus) {
+                public void done(final String stringObtained, final RequestStatus requestStatus) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             // If there is any data, try to parse it as JSON
-	                        if (data != null && data.length > 0) {
+	                        if (stringObtained != null && !stringObtained.equals("")) {
 	                            try {
 	                                // For latin languages, the codification must be ISO 8859-1(ISO-8859-1)
 	                                //http://es.wikipedia.org/wiki/ISO_8859-1
-	                                String jsonString = new String(data, "ISO-8859-1");
-	                                Log.v(HttpRequest.LOG_TAG, jsonString);
+	                                Log.v(HttpRequest.LOG_TAG, stringObtained);
 	                                // Parsing json data
 	                                // If there is not error, it returns a json object
 	                                if (!ErrorHandler.isError(requestStatus)) {
 	                                	// Check the Result returned by Google
-	                                	JSONObject jsonObject = new JSONObject(jsonString);
+	                                	JSONObject jsonObject = new JSONObject(stringObtained);
 	                                	// Check the status
 	                                	if (jsonObject.has("status")) {
 	                                		String resultStatus = jsonObject.getString("status");
@@ -368,13 +339,13 @@ public class HttpRequest {
         /**
          * The callback to call when the operation finishes.
          */
-        private final RequestDataCallback requestDataCallback;
+        private final RequestStringCallback requestStringCallback;
 
 
         /**
          *  The final data obtained from the server.
          */
-        private byte[] dataObtained;
+        private String stringObtained;
 
         /**
          * The main constructor.
@@ -386,12 +357,12 @@ public class HttpRequest {
          */
         ServerFetcher(RequestMethod requestMethod, Uri uri, Map<String,
                 String> parameters, HttpEntity entity, Map<String, String> headerFields,
-                RequestDataCallback requestDataCallback) {
+                RequestStringCallback requestStringCallback) {
             this.uri = uri;
             this.parameters = parameters;
             this.entity = entity;
             this.headerFields = headerFields;
-            this.requestDataCallback = requestDataCallback;
+            this.requestStringCallback = requestStringCallback;
         }
 
         /**
@@ -536,13 +507,10 @@ public class HttpRequest {
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     response.getEntity().writeTo(out);
                     out.close();
-                    dataObtained = out.toByteArray();
+                    stringObtained = out.toString("UTF8");
 
                     if (responseCode == HttpStatus.SC_OK) {
                         requestStatus = RequestStatus.REQUEST_OK;
-                    // If there is any data validation error, it will return 404
-                    } else if (responseCode == HttpStatus.SC_NOT_FOUND) {
-                        requestStatus = RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION;
                     // For the rest of the cases, there is an error.
                     } else {
                     	requestStatus = RequestStatus.ERROR_REQUEST_NOK;
@@ -561,8 +529,8 @@ public class HttpRequest {
                 requestStatus = RequestStatus.ERROR_REQUEST_NOK;
             } finally {
                 isRunning = false;
-                if (requestDataCallback != null) {
-                    requestDataCallback.done(dataObtained, requestStatus);
+                if (requestStringCallback != null) {
+                	requestStringCallback.done(stringObtained, requestStatus);
                 }
             }
         }
