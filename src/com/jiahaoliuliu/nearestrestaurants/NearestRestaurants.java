@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
@@ -38,6 +40,8 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	// System data
 	private Context context;
 	private ActionBar actionBar;
+	private FragmentManager fragmentManager;
+	
 	// The customized id of the action bar button
 	private static final int MENU_LIST_BUTTON_ID = 10000;
 
@@ -50,7 +54,10 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	private LatLng myPosition;
 	private boolean positionSetAtFirstTime = true;
 
-    @Override
+	// The fragments
+	private WorldMapFragment worldMapFragment;
+	
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nearest_restaurants_layout);
@@ -59,6 +66,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
         actionBar = getSupportActionBar();
         
         session = Session.getCurrentSession(context);
+        fragmentManager = getSupportFragmentManager();
 
 		// Get the user's position
 		positionTracker = new PositionTracker(context);
@@ -66,6 +74,12 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 		IntentFilter filter = new IntentFilter(PositionTracker.BROADCAST_POSITION_ACTION);
 		myPositionBReceiver = new MyPositionBroadcastReceiver();
 		context.registerReceiver(myPositionBReceiver, filter);
+
+		// Set the fragment
+		worldMapFragment = new WorldMapFragment();
+		FragmentTransaction ft = fragmentManager.beginTransaction();
+		ft.replace(R.id.content_frame, worldMapFragment, WorldMapFragment.class.toString());
+		ft.commit();
 
     }
     
