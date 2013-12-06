@@ -36,8 +36,7 @@ public class Preferences {
 	// The id of the strings
 	// Update the method clearUserData when modified
 	public enum StringId {
-		LAST_SCREEN, LAST_ADDRESS_TO_SEARCH, LAST_ADDRESS_FOUND_COMPLETE_ADDRESS, LAST_ADDRESS_FOUND_POSTAL_CODE,
-		LAST_MOVIE_FOR_CINEMA_ID, LAST_MOVIE_FOR_CINEMA_NAME,
+		LAST_SCREEN,
 
 		// The default value of the string id
 		DEFAULT_STRING_ID;
@@ -64,7 +63,7 @@ public class Preferences {
 	}
 
 	public enum DoubleId {
-		LAST_ADDRESS_FOUND_LATITUDE, LAST_ADDRESS_FOUND_LONGITUDE,
+		LAST_USER_POSITION_LATITUDE, LAST_USER_POSITION_LONGITUDE,
 		
 		// The default id
 		DEFAULT_DOUBLE_ID;

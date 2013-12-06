@@ -77,16 +77,28 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 			finish();
 		}
 
-		// Show that it is waiting for the user's position
-		setProgressBarIndeterminateVisibility(true);
-		Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
-		
 		// Get the user's position
 		positionTracker = new PositionTracker(context);
 		// Register the broadcast receiver
 		IntentFilter filter = new IntentFilter(PositionTracker.BROADCAST_POSITION_ACTION);
 		myPositionBReceiver = new MyPositionBroadcastReceiver();
 		context.registerReceiver(myPositionBReceiver, filter);
+
+    }
+    
+    @Override
+    protected void onResume() {
+    	super.onResume();
+		// Show the users last position if it was set
+		setProgressBarIndeterminateVisibility(true);
+		LatLng userLastPosition = session.getLastUserPosition();
+		if (userLastPosition != null) {
+			myPosition = userLastPosition;
+			drawUsersNewPositionOnMaps();
+			Toast.makeText(context, getResources().getString(R.string.updating_users_position), Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
+		}
     }
     
 	private class MyPositionBroadcastReceiver extends BroadcastReceiver {
@@ -106,6 +118,7 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 
 			// Update the position
 			myPosition = new LatLng(latitude, longitude);
+			session.setLastUserPosition(myPosition);
 			drawUsersNewPositionOnMaps();
 			updateRestaurants();
 			

@@ -7,6 +7,7 @@
 
     <!-- Google Maps -->
     <string name="users_position">Your actual position</string>
+    <string name="updating_users_position">Updating your position</string>
     <string name="looking_users_position">Looking for your position</string>
     
     <!-- Messages -->

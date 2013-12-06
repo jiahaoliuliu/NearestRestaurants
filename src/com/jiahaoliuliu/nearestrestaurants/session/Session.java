@@ -195,4 +195,22 @@ public final class Session {
     private void setRestaurantDBAdapter(RestaurantDBAdapter restaurantDBAdapter) {
     	this.restaurantDBAdapter = restaurantDBAdapter;
     }
+
+    public LatLng getLastUserPosition() {
+
+    	Double latitude = preferences.getDouble(DoubleId.LAST_USER_POSITION_LATITUDE);
+    	Double longitude = preferences.getDouble(DoubleId.LAST_USER_POSITION_LONGITUDE);
+    	
+    	if (latitude != null && longitude != null) {
+    		return new LatLng(latitude, longitude);
+    	} else {
+    		Log.w(LOG_TAG, "The user position is not set");
+    		return null;
+    	}
+    }
+
+    public void setLastUserPosition(LatLng userPosition) {
+    	preferences.setDouble(DoubleId.LAST_USER_POSITION_LATITUDE, userPosition.latitude);
+    	preferences.setDouble(DoubleId.LAST_USER_POSITION_LONGITUDE, userPosition.longitude);
+    }
 }
