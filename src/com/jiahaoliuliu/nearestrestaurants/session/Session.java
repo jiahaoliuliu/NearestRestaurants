@@ -213,4 +213,8 @@ public final class Session {
     	preferences.setDouble(DoubleId.LAST_USER_POSITION_LATITUDE, userPosition.latitude);
     	preferences.setDouble(DoubleId.LAST_USER_POSITION_LONGITUDE, userPosition.longitude);
     }
+
+	public List<Restaurant> getLastRestaurantsSaved() {
+		return restaurantDBAdapter.getAllRestaurants();
+	}
 }

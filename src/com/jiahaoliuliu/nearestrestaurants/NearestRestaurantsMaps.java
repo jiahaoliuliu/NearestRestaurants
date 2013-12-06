@@ -96,6 +96,11 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 			myPosition = userLastPosition;
 			drawUsersNewPositionOnMaps();
 			Toast.makeText(context, getResources().getString(R.string.updating_users_position), Toast.LENGTH_LONG).show();
+			
+			// Show the list of the last restaurants saved
+			List<Restaurant> restaurants = session.getLastRestaurantsSaved();
+			updateRestaurants(restaurants);
+			
 		} else {
 			Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
 		}
@@ -186,13 +191,6 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 			return;
 		}
 
-		// Remove any previous markers
-		if (restaurantMarkers != null) {
-			for (Marker marker : restaurantMarkers) {
-				marker.remove();
-			}
-		}
-
 		session.getRestaurantsNearby(myPosition, new RequestRestaurantsCallback() {
 			
 			@Override
@@ -200,7 +198,14 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 					RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "List of the restaurants returned correctly");
-					
+
+					// Remove any previous markers
+					if (restaurantMarkers != null) {
+						for (Marker marker : restaurantMarkers) {
+							marker.remove();
+						}
+					}
+
 					restaurantMarkers = new ArrayList<Marker>();
 					for (Restaurant restaurant: restaurants) {
 						Log.v(LOG_TAG, "Restaurant returned " + restaurant.toString());
@@ -224,6 +229,36 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 				}
 			}
 		});
+	}
+	
+	private void updateRestaurants(List<Restaurant> restaurants) {
+		// Remove any previous markers
+		if (restaurantMarkers != null) {
+			for (Marker marker : restaurantMarkers) {
+				marker.remove();
+			}
+		} else {
+			restaurantMarkers = new ArrayList<Marker>();
+		}
+
+		for (Restaurant restaurant: restaurants) {
+			Log.v(LOG_TAG, "Restaurant returned " + restaurant.toString());
+			
+			if (restaurant.getPosition() == null) {
+				Log.w(LOG_TAG, "The position of the restaurant is unknown " + restaurant);
+				continue;
+			}
+			
+			Marker marker = googleMap.addMarker(
+					new MarkerOptions()
+						.title(restaurant.getName())
+						.position(restaurant.getPosition())
+						// Use different color for the icon of the restaurant
+						.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+					);
+			restaurantMarkers.add(marker);
+		}
+
 	}
 	
 	// Use the action bar to switch views

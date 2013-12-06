@@ -147,7 +147,7 @@ public class RestaurantDBAdapter {
 	/*
 	 * Returns all the restaurants from the database
 	 */
-	public List<Restaurant> getAllExpenses() {
+	public List<Restaurant> getAllRestaurants() {
 		if (database == null || !database.isOpen()) {
 			openDatabase();
 		}
@@ -208,14 +208,14 @@ public class RestaurantDBAdapter {
 	}
 
 	//Private methods
-	//Create a content values for the database based on a Expense
+	//Create a content values for the database based on a Restaurant
 	// All the values are checked.
 	private ContentValues createValues (Restaurant restaurant) {
 		
 		Log.i(LOG_TAG, "Creating the content values from a restaurant");
 		ContentValues contentValues = new ContentValues();
 	
-		//Get each one of the fields of the expense
+		//Get each one of the fields
 		// Name
 		String name = restaurant.getName();
 		contentValues.put(KEY_NAME_ID, name);
