@@ -10,9 +10,14 @@ import com.google.android.gms.maps.model.LatLng;
 public class Restaurant {
 	private static final String LOG_TAG = Restaurant.class.getSimpleName();
 
+	// The id in the database
+	private int id = -1;
+
+	// The name of the restaurant
 	private static final String NAME_KEY = "name";
 	private String name;
-	
+
+	// The position (latitude, longitude)
 	private static final String GEOMETRY_KEY = "geometry";
 	private static final String LOCATION_KEY = "location";
 	private static final String LATITUDE_KEY = "lat";
@@ -26,6 +31,20 @@ public class Restaurant {
 
 	public Restaurant(String name, LatLng position) {
 		super();
+		this.name = name;
+		this.position = position;
+	}
+
+	public Restaurant(int id, String name, double latitude, double longitude) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.position = new LatLng(latitude, longitude);
+	}
+
+	public Restaurant(int id, String name, LatLng position) {
+		super();
+		this.id = id;
 		this.name = name;
 		this.position = position;
 	}
@@ -49,32 +68,26 @@ public class Restaurant {
      "types" : [ "restaurant", "lodging", "food", "casino", "establishment" ],
      "vicinity" : "80 Pyrmont Street, Pyrmont"
   	}, */
-	public Restaurant(String jsonString) {
-		try {
-			JSONObject jsonObject = new JSONObject(jsonString);
+	public Restaurant(JSONObject jsonObject) throws JSONException{
+		// Get the name
+		name = jsonObject.getString(NAME_KEY);
 
-			// Get the name
-			if (jsonObject.has(NAME_KEY)) {
-				name = jsonObject.getString(NAME_KEY);
-			}
-
-			// Get the Position
-			if (jsonObject.has(GEOMETRY_KEY)) {
-				JSONObject geometryJSONObject = jsonObject.getJSONObject(GEOMETRY_KEY);
-				if (geometryJSONObject.has(LOCATION_KEY)) {
-					JSONObject locationJSONObject = geometryJSONObject.getJSONObject(LOCATION_KEY);
-					if (locationJSONObject.has(LATITUDE_KEY)) {
-						double latitude = locationJSONObject.getDouble(LATITUDE_KEY);
-						double longitude = locationJSONObject.getDouble(LONGITUDE_KEY);
-						position = new LatLng(latitude, longitude);
-					}
-				}
-			}
-		} catch (JSONException e) {
-			Log.e(LOG_TAG, "Error parsing the restaurant", e);
-		}
+		// Get the Position
+		JSONObject geometryJSONObject = jsonObject.getJSONObject(GEOMETRY_KEY);
+		JSONObject locationJSONObject = geometryJSONObject.getJSONObject(LOCATION_KEY);
+		double latitude = locationJSONObject.getDouble(LATITUDE_KEY);
+		double longitude = locationJSONObject.getDouble(LONGITUDE_KEY);
+		position = new LatLng(latitude, longitude);
 	}
-	
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -95,6 +108,7 @@ public class Restaurant {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + id;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((position == null) ? 0 : position.hashCode());
@@ -110,6 +124,8 @@ public class Restaurant {
 		if (getClass() != obj.getClass())
 			return false;
 		Restaurant other = (Restaurant) obj;
+		if (id != other.id)
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -125,7 +141,8 @@ public class Restaurant {
 
 	@Override
 	public String toString() {
-		return "Restaurant [name=" + name + 
+		return "Restaurant [id=" + id +
+				", name=" + name + 
 				", position=" + position.latitude + "," + position.longitude  + "]";
 	}
 }

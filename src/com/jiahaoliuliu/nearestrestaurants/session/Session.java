@@ -17,6 +17,7 @@ import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
 import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.DoubleId;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.StringId;
+import com.jiahaoliuliu.nearestrestaurants.utils.RestaurantDBAdapter;
 
 /**
  * The Session class models a user's session. It is the intermediate level between Controllers and Service.
@@ -30,6 +31,9 @@ public final class Session {
     private Preferences preferences;
 
     private static Session currentSession = null;
+
+    // The database helper
+    private RestaurantDBAdapter restaurantDBAdapter;
 
     // The data of the user
     private Context context;
@@ -80,13 +84,21 @@ public final class Session {
      * @param context The context utilized.
      */
     private static void sessionFromCurrentSession(final Context context) {
-        Preferences preferences = new Preferences(context);
 
+    	// The session itself
         final Session newSession = Session.getInstance();
+        
+        // The service
         Service newService = new Service();
         newSession.setService(newService);
+
+        // The shared preferences
+        Preferences preferences = new Preferences(context);
         newSession.setPreferences(preferences);
 
+        RestaurantDBAdapter restaurantDBAdapter = new RestaurantDBAdapter(context);
+        newSession.setRestaurantDBAdapter(restaurantDBAdapter);
+        
         //Save the current session
         Session.setCurrentSession(newSession);
         Session.currentSession.saveAsCurrentSession(context);
@@ -116,23 +128,29 @@ public final class Session {
 			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
+					// Remove all previous data from the list of restaurants
 					List<Restaurant> restaurants = new ArrayList<Restaurant>();
 					
-					try {
+					// Remove any previous data from the database
+					restaurantDBAdapter.deleteAll();
+
 						// Parse the list of the restaurants
 						for (int i = 0; i < jsonArray.length(); i++) {
-							Restaurant restaurant = new Restaurant(jsonArray.get(i).toString());
-							restaurants.add(restaurant);
+							try {
+								JSONObject jsonObject = jsonArray.getJSONObject(i);
+								Restaurant restaurant = new Restaurant(jsonObject);
+								restaurants.add(restaurant);
+								
+								// Save the data into the database
+								restaurantDBAdapter.insertNewRestaurant(restaurant);
+							} catch (JSONException e) {
+								Log.e(LOG_TAG, "Error parsing the restaurant returned by Google at the position " +
+							          i + " of" + jsonArray.toString());
+							}
 						}
-						
+
 						// If everything went OK, return it.
 						requestRestaurantsCallback.done(restaurants, null, RequestStatus.REQUEST_OK);
-					} catch (JSONException e) {
-						Log.e(LOG_TAG, "Error parsing the restaurant returned by Google " + jsonArray.toString());
-						requestRestaurantsCallback.done(null,
-								ErrorHandler.parseRequestStatus(context, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION),
-								RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
-					}
 				} else {
 					requestRestaurantsCallback.done(null,
 							ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
@@ -143,10 +161,9 @@ public final class Session {
 	}
 
     //=========================================== Getters and setters ==============================
-    /*
     private Service getService() {
         return service;
-    }*/
+    }
 
     /**
      * Set the service as the service utilized for the sessions
@@ -172,4 +189,11 @@ public final class Session {
         this.preferences = preferences;
     }
 
+    private RestaurantDBAdapter getRestaurantDBAdapter() {
+    	return restaurantDBAdapter;
+    }
+
+    private void setRestaurantDBAdapter(RestaurantDBAdapter restaurantDBAdapter) {
+    	this.restaurantDBAdapter = restaurantDBAdapter;
+    }
 }
