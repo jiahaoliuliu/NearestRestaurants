@@ -64,10 +64,6 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
         // Layout
         listView = (ListView)findViewById(R.id.listView);
 
-		// Show that it is waiting for the user's position
-		setProgressBarIndeterminateVisibility(true);
-		Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
-		
 		// Get the user's position
 		positionTracker = new PositionTracker(context);
 		// Register the broadcast receiver
@@ -76,6 +72,27 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 		context.registerReceiver(myPositionBReceiver, filter);
     }
     
+    
+    @Override
+    protected void onResume() {
+    	super.onResume();
+		// Show the users last position if it was set
+		setSupportProgressBarIndeterminateVisibility(true);
+		LatLng userLastPosition = session.getLastUserPosition();
+		if (userLastPosition != null) {
+			myPosition = userLastPosition;
+			Toast.makeText(context, getResources().getString(R.string.updating_users_position), Toast.LENGTH_LONG).show();
+			
+			// Show the list of the last restaurants saved
+			List<Restaurant> restaurants = session.getLastRestaurantsSaved();
+			restaurantListAdapter = new RestaurantListAdapter(context, restaurants);
+			listView.setAdapter(restaurantListAdapter);
+			
+		} else {
+			Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
+		}
+    }
+
 	private class MyPositionBroadcastReceiver extends BroadcastReceiver {
 
 		@Override
@@ -93,6 +110,7 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 
 			// Update the position
 			myPosition = new LatLng(latitude, longitude);
+			session.setLastUserPosition(myPosition);
 			updateRestaurants();
 			
 			// Disable the progress bar
