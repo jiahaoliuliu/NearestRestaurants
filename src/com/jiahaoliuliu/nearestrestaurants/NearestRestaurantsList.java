@@ -50,7 +50,6 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 	private PositionTracker positionTracker;
 	private MyPositionBroadcastReceiver myPositionBReceiver;
 	private LatLng myPosition;
-	private Marker userActualPositionMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +93,6 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 
 			// Update the position
 			myPosition = new LatLng(latitude, longitude);
-			drawUsersNewPositionOnMaps();
 			updateRestaurants();
 			
 			// Disable the progress bar
@@ -110,25 +108,6 @@ public class NearestRestaurantsList extends SherlockFragmentActivity {
 		if (myPositionBReceiver != null) {
 			context.unregisterReceiver(myPositionBReceiver);
 		}
-	}
-	
-	private void drawUsersNewPositionOnMaps() {
-		if (myPosition == null) {
-			Log.e(LOG_TAG, "Trying to draw the users new position when her position is null");
-			return;
-		}
-
-		// If the market position is the user actual position, exit
-		if (userActualPositionMarker != null && userActualPositionMarker.getPosition().equals(myPosition)) {
-			Log.w(LOG_TAG, "The new position is the same as the old one: " + myPosition.latitude + " ," + myPosition.longitude);
-			return;
-		}
-
-		// Remove the actual marker, if exists
-		if (userActualPositionMarker != null) {
-			userActualPositionMarker.remove();
-		}
-
 	}
 
 	/**
