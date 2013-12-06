@@ -1,4 +1,4 @@
-package com.jiahaoliuliu.nearestrestaurants.utils;
+package com.jiahaoliuliu.nearestrestaurants.session;
 
 import java.util.ArrayList;
 import java.util.List;

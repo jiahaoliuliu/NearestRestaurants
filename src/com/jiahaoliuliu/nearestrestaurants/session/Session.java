@@ -17,7 +17,6 @@ import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
 import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.DoubleId;
 import com.jiahaoliuliu.nearestrestaurants.session.Preferences.StringId;
-import com.jiahaoliuliu.nearestrestaurants.utils.RestaurantDBAdapter;
 
 /**
  * The Session class models a user's session. It is the intermediate level between Controllers and Service.
@@ -175,7 +174,7 @@ public final class Session {
         this.service = service;
     }
 
-    public Preferences getPreferences() {
+    private Preferences getPreferences() {
        return preferences;
     }
 
