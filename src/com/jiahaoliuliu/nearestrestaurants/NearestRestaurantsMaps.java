@@ -90,7 +90,7 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
     protected void onResume() {
     	super.onResume();
 		// Show the users last position if it was set
-		setProgressBarIndeterminateVisibility(true);
+		setSupportProgressBarIndeterminateVisibility(true);
 		LatLng userLastPosition = session.getLastUserPosition();
 		if (userLastPosition != null) {
 			myPosition = userLastPosition;
@@ -99,6 +99,14 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 		} else {
 			Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
 		}
+    }
+    
+    @Override
+    protected void onPause() {
+    	super.onPause();
+    	
+    	// Disable any indeterminate progress bar
+    	setSupportProgressBarIndeterminateVisibility(false);
     }
     
 	private class MyPositionBroadcastReceiver extends BroadcastReceiver {
@@ -123,7 +131,7 @@ public class NearestRestaurantsMaps extends SherlockFragmentActivity {
 			updateRestaurants();
 			
 			// Disable the progress bar
-			setProgressBarIndeterminateVisibility(false);
+			setSupportProgressBarIndeterminateVisibility(false);
 		}
 	}
 
