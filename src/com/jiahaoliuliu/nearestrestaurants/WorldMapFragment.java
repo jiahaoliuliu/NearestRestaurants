@@ -79,7 +79,7 @@ public class WorldMapFragment extends Fragment {
 	    }
 
 	    try {
-	        view = inflater.inflate(R.layout.world_map_fragment, container, false);
+	        view = inflater.inflate(R.layout.world_map_fragment_layout, container, false);
 		    int isEnabled = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
 		    if (isEnabled != ConnectionResult.SUCCESS) {
 		        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(isEnabled, activity, 0);
