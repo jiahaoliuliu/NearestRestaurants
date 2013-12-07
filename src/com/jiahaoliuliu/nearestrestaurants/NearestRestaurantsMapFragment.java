@@ -1,5 +1,6 @@
 package com.jiahaoliuliu.nearestrestaurants;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,6 +32,15 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.maps.SupportMapFragment;
 
+/**
+ * The map fragment class to show the Google Map.
+ * This includes the solution for Duplicated Id in the case of switch of Map fragment
+ * http://stackoverflow.com/questions/14565460/error-opening-supportmapfragment-for-second-time
+ * And the solution for "activity has been destroyed"
+ * http://stackoverflow.com/questions/19239175/java-lang-illegalstateexception-activity-has-been-destroyed-using-fragments
+ * @author jliu
+ *
+ */
 public class NearestRestaurantsMapFragment extends Fragment {
 
 	private static final String LOG_TAG = NearestRestaurantsMapFragment.class.getSimpleName();
@@ -38,66 +48,58 @@ public class NearestRestaurantsMapFragment extends Fragment {
 	private static final int ZOOM_ANIMATION_LEVEL = 5;
 	private static final int MOST_ZOOM_LEVEL = 1;
 
-	private static View view;
 	private Context context;
 	private Activity activity;
-	private FragmentManager supportFragmentManager;
-	
-	private GoogleMap googleMap;
+
+	private SupportMapFragment fragment;
+	private GoogleMap map;
 
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		/*
-		// Check the implementation
-		try {
-			listViajerosProvider = (ListViajerosProvider) activity;
-		} catch (ClassCastException classCastException) {
-			Log.e(LOG_TAG, "The attached class has not implemented ListViajerosProvider. ", classCastException);
-			throw new ClassCastException(activity.toString() + " must implement ListViajerosProvider.");
-		}
-		
-		try {
-			onUrlReceivedListener = (OnUrlReceivedListener) activity;
-		} catch (ClassCastException classCastException) {
-			Log.e(LOG_TAG, "The attached class has not implemented OnUrlReceivedListener. ", classCastException);
-			throw new ClassCastException(activity.toString() + " must implement OnUrlReceivedListener.");
-		}*/
-
 		this.context = activity;
 		this.activity = activity;
 
 	}
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-	    if (view != null) {
-	        ViewGroup parent = (ViewGroup) view.getParent();
-	        if (parent != null)
-	            parent.removeView(view);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	    return inflater.inflate(R.layout.map_fragment_layout, container, false);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+	    super.onActivityCreated(savedInstanceState);
+	    FragmentManager fm = getChildFragmentManager();
+	    fragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
+	    if (fragment == null) {
+	        fragment = SupportMapFragment.newInstance();
+	        fm.beginTransaction().replace(R.id.map, fragment).commit();
 	    }
+	}
+
+	@Override
+	public void onResume() {
+	    super.onResume();
+	    if (map == null) {
+	        map = fragment.getMap();
+	        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)));
+	    }
+	}
+
+	@Override
+	public void onDetach() {
+	    super.onDetach();
 
 	    try {
-	        view = inflater.inflate(R.layout.map_fragment_layout, container, false);
-		    int isEnabled = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
-		    if (isEnabled != ConnectionResult.SUCCESS) {
-		        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(isEnabled, activity, 0);
-		        if (errorDialog != null) {
-	        		errorDialog.show();
-		        }
-		    } else {
+	        Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
+	        childFragmentManager.setAccessible(true);
+	        childFragmentManager.set(this, null);
 
-				supportFragmentManager = this.getActivity().getSupportFragmentManager();
-				// Get the map
-				googleMap = ((SupportMapFragment)supportFragmentManager
-						.findFragmentById(R.id.map))
-						.getMap();
-			}
-	    } catch (InflateException e) {
-	        /* map is already there, just return view as it is */
-	    	Log.e(LOG_TAG, "Error inflating the view.", e);
+	    } catch (NoSuchFieldException e) {
+	        throw new RuntimeException(e);
+	    } catch (IllegalAccessException e) {
+	        throw new RuntimeException(e);
 	    }
-	    return view;
 	}
 }
