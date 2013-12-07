@@ -1,23 +1,14 @@
 package com.jiahaoliuliu.nearestrestaurants;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.Callback;
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
-import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
-import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler;
 import com.jiahaoliuliu.nearestrestaurants.session.Session;
 import com.jiahaoliuliu.nearestrestaurants.utils.PositionTracker;
 
@@ -29,8 +20,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.View;
 import android.widget.Toast;
 
 public class NearestRestaurants extends SherlockFragmentActivity {
@@ -40,10 +29,15 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	// System data
 	private Context context;
 	private ActionBar actionBar;
+	private Menu actionBarMenu;
 	private FragmentManager fragmentManager;
+
+	// Callback used to deal with the asynchronous operations
+	private Callback actionBarMenuCallback;
 	
 	// The customized id of the action bar button
-	private static final int MENU_LIST_BUTTON_ID = 10000;
+	private MenuItem menuViewListItem;
+	private static final int MENU_VIEW_LIST_BUTTON_ID = 10000;
 
 	// Session
 	private Session session;
@@ -75,12 +69,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 		myPositionBReceiver = new MyPositionBroadcastReceiver();
 		context.registerReceiver(myPositionBReceiver, filter);
 
-		// Set the fragment
-		worldMapFragment = new WorldMapFragment();
-		FragmentTransaction ft = fragmentManager.beginTransaction();
-		ft.replace(R.id.content_frame, worldMapFragment, WorldMapFragment.class.toString());
-		ft.commit();
-
+		showWorldMapFragment();
     }
     
     @Override
@@ -141,22 +130,23 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			context.unregisterReceiver(myPositionBReceiver);
 		}
 	}
-	
+
 	// Use the action bar to switch views
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
-    	menu.add(Menu.NONE, MENU_LIST_BUTTON_ID, Menu
-        		.NONE, "List")
-        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-
+    	// Get the value of Menu
+    	actionBarMenu = menu;
+    	if (actionBarMenuCallback != null) {
+    		actionBarMenuCallback.done();
+    	}
+    	
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	
-    	if (item.getItemId() == MENU_LIST_BUTTON_ID) {
+    	if (item.getItemId() == MENU_VIEW_LIST_BUTTON_ID) {
     		// Go to List
     		Intent startListActivityIntent = new Intent(this, NearestRestaurantsList.class);
     		startActivity(startListActivityIntent);
@@ -164,4 +154,46 @@ public class NearestRestaurants extends SherlockFragmentActivity {
     	
         return true;
     }
- }
+
+    /**
+     * Show the world map fragment
+     */
+    private void showWorldMapFragment() {
+		worldMapFragment = new WorldMapFragment();
+		FragmentTransaction ft = fragmentManager.beginTransaction();
+		ft.replace(R.id.content_frame, worldMapFragment, WorldMapFragment.class.toString());
+		ft.commit();
+		
+		// Modify the action bar menu to adapt it to the world map fragment
+		if (actionBarMenu == null) {
+			actionBarMenuCallback = new Callback() {
+
+				@Override
+				public void done() {
+					showWorldMapActionBar();
+					
+					// Null the call back so it won't be
+					// called again
+					actionBarMenuCallback = null;
+				}
+			};
+		} else {
+			showWorldMapActionBar();
+		}
+    }
+    
+    private void showWorldMapActionBar() {
+    	if (actionBarMenu == null) {
+    		Log.e(LOG_TAG, "Trying to adapt the action bar to the world map when it is null");
+    		return;
+    	}
+    	
+    	// Remove any previous menu item
+    	actionBarMenu.clear();
+    	// Set the initial state of the menu item
+    	menuViewListItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_LIST_BUTTON_ID, Menu
+        		.NONE, getResources().getString(R.string.action_bar_show_list));
+    	menuViewListItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+    }
+
+}

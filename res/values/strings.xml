@@ -3,8 +3,11 @@
 
     <string name="app_name">NearestRestaurants</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
 
+    <!-- Main menu -->
+    <string name="action_bar_show_list">List</string>
+    <string name="action_bar_show_map">Map</string>
+    
     <!-- Google Maps -->
     <string name="users_position">Your actual position</string>
     <string name="updating_users_position">Updating your position</string>
