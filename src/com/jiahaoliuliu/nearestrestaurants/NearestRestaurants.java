@@ -37,7 +37,10 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	
 	// The customized id of the action bar button
 	private MenuItem menuViewListItem;
+	private MenuItem menuViewMapItem;
+
 	private static final int MENU_VIEW_LIST_BUTTON_ID = 10000;
+	private static final int MENU_VIEW_MAP_BUTTON_ID = 10001;
 
 	// Session
 	private Session session;
@@ -50,6 +53,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 
 	// The fragments
 	private WorldMapFragment worldMapFragment;
+	private NearestRestaurantsListFragment listFragment;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,9 +151,10 @@ public class NearestRestaurants extends SherlockFragmentActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
     	
     	if (item.getItemId() == MENU_VIEW_LIST_BUTTON_ID) {
-    		// Go to List
-    		Intent startListActivityIntent = new Intent(this, NearestRestaurantsList.class);
-    		startActivity(startListActivityIntent);
+    		// Show the list fragment
+    		showListFragment();
+    	} else if (item.getItemId() == MENU_VIEW_MAP_BUTTON_ID) {
+    		showWorldMapFragment();
     	}
     	
         return true;
@@ -187,13 +192,56 @@ public class NearestRestaurants extends SherlockFragmentActivity {
     		Log.e(LOG_TAG, "Trying to adapt the action bar to the world map when it is null");
     		return;
     	}
-    	
+
     	// Remove any previous menu item
     	actionBarMenu.clear();
     	// Set the initial state of the menu item
     	menuViewListItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_LIST_BUTTON_ID, Menu
         		.NONE, getResources().getString(R.string.action_bar_show_list));
     	menuViewListItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+    }
+
+    /**
+     * Show the list fragment
+     */
+    private void showListFragment() {
+    	if (listFragment == null) {
+    		listFragment = new NearestRestaurantsListFragment();
+    	}
+		FragmentTransaction ft = fragmentManager.beginTransaction();
+		ft.replace(R.id.content_frame, listFragment, NearestRestaurantsListFragment.class.toString());
+		ft.commit();
+		
+		// Modify the action bar menu to adapt it to the world map fragment
+		if (actionBarMenu == null) {
+			actionBarMenuCallback = new Callback() {
+
+				@Override
+				public void done() {
+					showListActionBar();
+					
+					// Null the call back so it won't be
+					// called again
+					actionBarMenuCallback = null;
+				}
+			};
+		} else {
+			showListActionBar();
+		}
+    }
+    
+    private void showListActionBar() {
+    	if (actionBarMenu == null) {
+    		Log.e(LOG_TAG, "Trying to adapt the action bar to the world map when it is null");
+    		return;
+    	}
+
+    	// Remove any previous menu item
+    	actionBarMenu.clear();
+    	// Set the initial state of the menu item
+    	menuViewMapItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_MAP_BUTTON_ID, Menu
+        		.NONE, getResources().getString(R.string.action_bar_show_map));
+    	menuViewMapItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
     }
 
 }
