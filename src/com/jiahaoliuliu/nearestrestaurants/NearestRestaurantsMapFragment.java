@@ -31,9 +31,9 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.maps.SupportMapFragment;
 
-public class WorldMapFragment extends Fragment {
+public class NearestRestaurantsMapFragment extends Fragment {
 
-	private static final String LOG_TAG = WorldMapFragment.class.getSimpleName();
+	private static final String LOG_TAG = NearestRestaurantsMapFragment.class.getSimpleName();
 	
 	private static final int ZOOM_ANIMATION_LEVEL = 5;
 	private static final int MOST_ZOOM_LEVEL = 1;
