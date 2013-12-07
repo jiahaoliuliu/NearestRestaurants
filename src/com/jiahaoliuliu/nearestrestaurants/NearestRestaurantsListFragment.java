@@ -5,13 +5,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockListFragment;
 
-public class NearestRestaurantsListFragment extends SherlockFragment{
+public class NearestRestaurantsListFragment extends SherlockListFragment{
 
 	@Override  
 	  public View onCreateView(LayoutInflater inflater, ViewGroup container,  
 	    Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.list_fragment_layout, container, false);
+		
+		// Set the adapter
+		return super.onCreateView(inflater, container, savedInstanceState);
 	  }
 }
