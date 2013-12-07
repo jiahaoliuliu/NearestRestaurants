@@ -52,7 +52,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	private boolean positionSetAtFirstTime = true;
 
 	// The fragments
-	private NearestRestaurantsMapFragment worldMapFragment;
+	private NearestRestaurantsMapFragment mapFragment;
 	private NearestRestaurantsListFragment listFragment;
 	
 	@Override
@@ -164,9 +164,11 @@ public class NearestRestaurants extends SherlockFragmentActivity {
      * Show the world map fragment
      */
     private void showWorldMapFragment() {
-		worldMapFragment = new NearestRestaurantsMapFragment();
+    	if (mapFragment == null) {
+    		mapFragment = new NearestRestaurantsMapFragment();
+    	}
 		FragmentTransaction ft = fragmentManager.beginTransaction();
-		ft.replace(R.id.content_frame, worldMapFragment, NearestRestaurantsMapFragment.class.toString());
+		ft.replace(R.id.content_frame, mapFragment, NearestRestaurantsMapFragment.class.toString());
 		ft.commit();
 		
 		// Modify the action bar menu to adapt it to the world map fragment
