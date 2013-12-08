@@ -81,10 +81,8 @@ public class NearestRestaurantsMapFragment extends Fragment {
 	@Override
 	public void onResume() {
 	    super.onResume();
-	    if (map == null) {
-	        map = fragment.getMap();
-	        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)));
-	    }
+        map = fragment.getMap();
+        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)));
 	}
 
 	@Override
