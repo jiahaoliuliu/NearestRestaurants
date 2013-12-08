@@ -6,7 +6,9 @@ import java.util.List;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -52,9 +54,7 @@ public class NearestRestaurantsMapFragment extends Fragment
 	// Google Map
 	private GoogleMap googleMap;
 	private boolean isGoogleMapValid = false;
-	
-	private static final int ZOOM_ANIMATION_LEVEL = 5;
-	private static final int MOST_ZOOM_LEVEL = 1;
+
 	private static final int DEFAULT_ZOOM_LEVEL = 12;
 	private Marker userActualPositionMarker;
 	// The list of the restaurants
@@ -67,7 +67,7 @@ public class NearestRestaurantsMapFragment extends Fragment
 
 	// The user position
 	private LatLng myActualPosition;
-	private boolean positionSetAtFirstTime = true;
+	private boolean isUserPositionSet = false;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -95,7 +95,23 @@ public class NearestRestaurantsMapFragment extends Fragment
 	    fragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
 	    if (fragment == null) {
 	    	Log.v(LOG_TAG, "The fragment was null. Retrieving a new support map fragment");
-	        fragment = SupportMapFragment.newInstance();
+	    	
+	    	// If the users position is known at this point, create the map with the new
+	    	// position
+	    	myActualPosition = onPositionRequestedListener.requestPosition();
+	    	if (myActualPosition != null) {
+		    	CameraPosition cameraPosition = new CameraPosition.Builder()
+		        .target(myActualPosition)
+		        .zoom(DEFAULT_ZOOM_LEVEL)
+		        .build();
+		    	GoogleMapOptions googleOptions = new GoogleMapOptions()
+		        	.camera(cameraPosition);
+		    	fragment = SupportMapFragment.newInstance(googleOptions);
+		    	isUserPositionSet = true;
+	    	} else {
+		        fragment = SupportMapFragment.newInstance();
+	    	}
+	    	
 	        fm.beginTransaction().replace(R.id.map, fragment).commit();
 	    }
 	}
@@ -164,13 +180,13 @@ public class NearestRestaurantsMapFragment extends Fragment
 				.title(getResources().getString(R.string.users_position))
 				);
 
-		// Move the map to the user's position if it is the first time that the app
-		// get her position
-		if (positionSetAtFirstTime) {
-			// Move the map to the users position
-			googleMap.animateCamera(
-					CameraUpdateFactory.newLatLngZoom(myActualPosition, DEFAULT_ZOOM_LEVEL));
-			//positionSetAtFirstTime = false;
+		// Check if the users position has been set before
+		// if not, move the map to such position with default zoom
+		if (!isUserPositionSet) {
+			googleMap.moveCamera(
+					CameraUpdateFactory.newLatLngZoom(
+							myActualPosition, DEFAULT_ZOOM_LEVEL));
+			isUserPositionSet = true;
 		}
 	}
 
