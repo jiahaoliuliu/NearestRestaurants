@@ -8,6 +8,8 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.maps.model.LatLng;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.Callback;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
 import com.jiahaoliuliu.nearestrestaurants.session.Session;
 import com.jiahaoliuliu.nearestrestaurants.utils.PositionTracker;
@@ -22,7 +24,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.widget.Toast;
 
-public class NearestRestaurants extends SherlockFragmentActivity {
+public class NearestRestaurants extends SherlockFragmentActivity 
+	implements OnPositionRequestedListener {
 
 	private static final String LOG_TAG = NearestRestaurants.class.getSimpleName();
 
@@ -54,6 +57,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 	// The fragments
 	private NearestRestaurantsMapFragment mapFragment;
 	private NearestRestaurantsListFragment listFragment;
+	private OnUpdatePositionListener onUpdatePositionListener;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +77,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 		myPositionBReceiver = new MyPositionBroadcastReceiver();
 		context.registerReceiver(myPositionBReceiver, filter);
 
-		showWorldMapFragment();
+		showMapFragment();
     }
     
     @Override
@@ -114,12 +118,16 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 				Log.e(LOG_TAG, "Wrong position found: " + latitude + ":" + longitude);
 				return;
 			}
-			
+
 			Log.v(LOG_TAG, "The new position is " + latitude + " ," + longitude);
 
 			// Update the position
 			myPosition = new LatLng(latitude, longitude);
 			session.setLastUserPosition(myPosition);
+			if (onUpdatePositionListener != null) {
+				onUpdatePositionListener.updatePosition(myPosition);
+			}
+			
 			// Disable the progress bar
 			setSupportProgressBarIndeterminateVisibility(false);
 		}
@@ -135,6 +143,7 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 		}
 	}
 
+	// =============================================== ActionBar =======================================================
 	// Use the action bar to switch views
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -154,30 +163,33 @@ public class NearestRestaurants extends SherlockFragmentActivity {
     		// Show the list fragment
     		showListFragment();
     	} else if (item.getItemId() == MENU_VIEW_MAP_BUTTON_ID) {
-    		showWorldMapFragment();
+    		showMapFragment();
     	}
     	
         return true;
     }
 
     /**
-     * Show the world map fragment
+     * Show the map fragment
      */
-    private void showWorldMapFragment() {
+    private void showMapFragment() {
     	if (mapFragment == null) {
     		mapFragment = new NearestRestaurantsMapFragment();
     	}
 		FragmentTransaction ft = fragmentManager.beginTransaction();
 		ft.replace(R.id.content_frame, mapFragment, NearestRestaurantsMapFragment.class.toString());
 		ft.commit();
-		
-		// Modify the action bar menu to adapt it to the world map fragment
+
+		// Update the onUpdatePositionListener
+		onUpdatePositionListener = mapFragment;
+
+		// Modify the action bar menu to adapt it to the map fragment
 		if (actionBarMenu == null) {
 			actionBarMenuCallback = new Callback() {
 
 				@Override
 				public void done() {
-					showWorldMapActionBar();
+					showMapActionBar();
 					
 					// Null the call back so it won't be
 					// called again
@@ -185,13 +197,13 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 				}
 			};
 		} else {
-			showWorldMapActionBar();
+			showMapActionBar();
 		}
     }
     
-    private void showWorldMapActionBar() {
+    private void showMapActionBar() {
     	if (actionBarMenu == null) {
-    		Log.e(LOG_TAG, "Trying to adapt the action bar to the world map when it is null");
+    		Log.e(LOG_TAG, "Trying to adapt the action bar to the map when it is null");
     		return;
     	}
 
@@ -214,7 +226,10 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 		ft.replace(R.id.content_frame, listFragment, NearestRestaurantsListFragment.class.toString());
 		ft.commit();
 		
-		// Modify the action bar menu to adapt it to the world map fragment
+		// Update the onUpdatePositionListener
+		onUpdatePositionListener = listFragment;
+		
+		// Modify the action bar menu to adapt it to the map fragment
 		if (actionBarMenu == null) {
 			actionBarMenuCallback = new Callback() {
 
@@ -231,10 +246,10 @@ public class NearestRestaurants extends SherlockFragmentActivity {
 			showListActionBar();
 		}
     }
-    
+
     private void showListActionBar() {
     	if (actionBarMenu == null) {
-    		Log.e(LOG_TAG, "Trying to adapt the action bar to the world map when it is null");
+    		Log.e(LOG_TAG, "Trying to adapt the action bar to the map when it is null");
     		return;
     	}
 
@@ -245,5 +260,13 @@ public class NearestRestaurants extends SherlockFragmentActivity {
         		.NONE, getResources().getString(R.string.action_bar_show_map));
     	menuViewMapItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
     }
+
+    // =============================================== Interfaces =======================================================
+
+	@Override
+	public LatLng requestPosition() {
+		return myPosition;
+	}
+
 
 }
