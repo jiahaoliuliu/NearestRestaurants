@@ -89,10 +89,11 @@ public class NearestRestaurants extends SherlockFragmentActivity
 		if (userLastPosition != null) {
 			myPosition = userLastPosition;
 			Toast.makeText(context, getResources().getString(R.string.updating_users_position), Toast.LENGTH_LONG).show();
-			
-			// Show the list of the last restaurants saved
-			List<Restaurant> restaurants = session.getLastRestaurantsSaved();
-			
+
+			// Update the fragments position
+			if (onUpdatePositionListener != null) {
+				onUpdatePositionListener.updatePosition(myPosition);
+			}
 		} else {
 			Toast.makeText(context, getResources().getString(R.string.looking_users_position), Toast.LENGTH_LONG).show();
 		}
