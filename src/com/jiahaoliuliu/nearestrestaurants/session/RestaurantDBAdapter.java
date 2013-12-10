@@ -1,6 +1,7 @@
 package com.jiahaoliuliu.nearestrestaurants.session;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
@@ -146,7 +147,7 @@ public class RestaurantDBAdapter {
 	/*
 	 * Returns all the restaurants from the database
 	 */
-	public List<Restaurant> getAllRestaurants() {
+	public HashMap<String, Restaurant> getAllRestaurants() {
 		if (database == null || !database.isOpen()) {
 			openDatabase();
 		}
@@ -163,7 +164,7 @@ public class RestaurantDBAdapter {
 				                null,
 				                null,
 				                null);
-		List<Restaurant> restaurants = getAllRowsFromCursor(mCursor);
+		HashMap<String, Restaurant> restaurants = getAllRowsFromCursor(mCursor);
 		mCursor.close();
 		return restaurants;
 	}
@@ -264,13 +265,13 @@ public class RestaurantDBAdapter {
 		return result;
 	}
 
-	private List<Restaurant> getAllRowsFromCursor(Cursor mCursor) {
-		List<Restaurant> restaurants = new ArrayList<Restaurant>();
+	private HashMap<String, Restaurant> getAllRowsFromCursor(Cursor mCursor) {
+		HashMap<String, Restaurant> restaurants = new HashMap<String, Restaurant>();
 		
 		int count = mCursor.getCount();
 		for (int i = 0; i < count; i++) {
 			Restaurant tempRestaurant = getNewRowFromCursor(mCursor, i);
-			restaurants.add(tempRestaurant);
+			restaurants.put(tempRestaurant.getId(), tempRestaurant);
 		}
 		
 		return restaurants;

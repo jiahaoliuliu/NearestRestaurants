@@ -1,6 +1,7 @@
 package com.jiahaoliuliu.nearestrestaurants.session;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -36,6 +37,7 @@ public final class Session {
 
     // The data of the user
     private Context context;
+    private HashMap<String, Restaurant> restaurants;
 
     /**
      * The constructor of the session.
@@ -95,9 +97,14 @@ public final class Session {
         Preferences preferences = new Preferences(context);
         newSession.setPreferences(preferences);
 
+        // The database
         RestaurantDBAdapter restaurantDBAdapter = new RestaurantDBAdapter(context);
         newSession.setRestaurantDBAdapter(restaurantDBAdapter);
-        
+
+        // The hashmap of all the restaurants
+        HashMap<String, Restaurant> restaurants = restaurantDBAdapter.getAllRestaurants();
+        newSession.setRestaurants(restaurants);
+
         //Save the current session
         Session.setCurrentSession(newSession);
         Session.currentSession.saveAsCurrentSession(context);
@@ -127,21 +134,24 @@ public final class Session {
 			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
-					// Remove all previous data from the list of restaurants
-					List<Restaurant> restaurants = new ArrayList<Restaurant>();
-					
-					// Remove any previous data from the database
-					restaurantDBAdapter.deleteAll();
 
+						List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
 						// Parse the list of the restaurants
 						for (int i = 0; i < jsonArray.length(); i++) {
 							try {
 								JSONObject jsonObject = jsonArray.getJSONObject(i);
 								Restaurant restaurant = new Restaurant(jsonObject);
-								restaurants.add(restaurant);
-								
-								// Save the data into the database
-								restaurantDBAdapter.insertNewRestaurant(restaurant);
+								restaurantsList.add(restaurant);
+
+								// Check if the restaurant already exists in the hashMap
+								// If not, insert it into the temporal hashmap
+								// and the database
+								if (!restaurants.containsKey(restaurant.getId())) {
+									// Insert data
+									restaurants.put(restaurant.getId(), restaurant);
+									// Save the data into the database
+									restaurantDBAdapter.insertNewRestaurant(restaurant);
+								}
 							} catch (JSONException e) {
 								Log.e(LOG_TAG, "Error parsing the restaurant returned by Google at the position " +
 							          i + " of" + jsonArray.toString());
@@ -149,8 +159,11 @@ public final class Session {
 						}
 
 						// If everything went OK, return it.
-						requestRestaurantsCallback.done(restaurants, null, RequestStatus.REQUEST_OK);
+						requestRestaurantsCallback.done(restaurantsList, null, RequestStatus.REQUEST_OK);
 				} else {
+					// TODO: Check the error
+					// If the error is about Internet connection, calculate the possible restaurants within the 
+					// range and return it to the caller
 					requestRestaurantsCallback.done(null,
 							ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
 							requestStatus);
@@ -214,7 +227,11 @@ public final class Session {
     	preferences.setDouble(DoubleId.LAST_USER_POSITION_LONGITUDE, userPosition.longitude);
     }
 
-	public List<Restaurant> getLastRestaurantsSaved() {
-		return restaurantDBAdapter.getAllRestaurants();
+	private HashMap<String, Restaurant> getRestaurants() {
+		return restaurants;
+	}
+
+	private void setRestaurants(HashMap<String, Restaurant> restaurants) {
+		this.restaurants = restaurants;
 	}
 }
