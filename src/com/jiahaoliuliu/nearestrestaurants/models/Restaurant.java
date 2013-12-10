@@ -11,7 +11,8 @@ public class Restaurant {
 	private static final String LOG_TAG = Restaurant.class.getSimpleName();
 
 	// The id in the database
-	private int id = -1;
+	private static final String ID_KEY = "id";
+	private String id = "";
 
 	// The name of the restaurant
 	private static final String NAME_KEY = "name";
@@ -29,20 +30,14 @@ public class Restaurant {
 		super();
 	}
 
-	public Restaurant(String name, LatLng position) {
-		super();
-		this.name = name;
-		this.position = position;
-	}
-
-	public Restaurant(int id, String name, double latitude, double longitude) {
+	public Restaurant(String id, String name, double latitude, double longitude) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.position = new LatLng(latitude, longitude);
 	}
 
-	public Restaurant(int id, String name, LatLng position) {
+	public Restaurant(String id, String name, LatLng position) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -69,6 +64,9 @@ public class Restaurant {
      "vicinity" : "80 Pyrmont Street, Pyrmont"
   	}, */
 	public Restaurant(JSONObject jsonObject) throws JSONException{
+		// Get the id
+		id = jsonObject.getString(ID_KEY);
+
 		// Get the name
 		name = jsonObject.getString(NAME_KEY);
 
@@ -80,11 +78,11 @@ public class Restaurant {
 		position = new LatLng(latitude, longitude);
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -108,7 +106,7 @@ public class Restaurant {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + id;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((position == null) ? 0 : position.hashCode());
@@ -124,7 +122,10 @@ public class Restaurant {
 		if (getClass() != obj.getClass())
 			return false;
 		Restaurant other = (Restaurant) obj;
-		if (id != other.id)
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)
