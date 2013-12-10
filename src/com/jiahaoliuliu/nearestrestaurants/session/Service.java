@@ -33,7 +33,7 @@ public class Service {
     
     // The API key
     private static final String API_KEY_KEY = "key";
-    private static final String API_KEY_VALUE = "AIzaSyDgVvq9RqJ5-2ylXgmQj6BMWPg5bHpGz_E";
+    private static final String API_KEY_VALUE = "";
     
     // Location
     private static final String LOCATION_KEY = "location";

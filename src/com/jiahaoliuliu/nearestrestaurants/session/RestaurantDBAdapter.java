@@ -26,7 +26,7 @@ public class RestaurantDBAdapter {
 	private static final String DATABASE_TABLE = "restaurant";
 
 	//Database fields
-	private static final String KEY_ROW_ID = "_id";
+	private static final String KEY_ID = "_id";
 	private static final String KEY_NAME_ID = "name";
 	private static final String KEY_LATITUDE_ID = "latitude";
 	private static final String KEY_LONGITUDE_ID = "longitude";
@@ -64,9 +64,8 @@ public class RestaurantDBAdapter {
 		}
 
 		ContentValues restaurantValues = createValues(restaurant);
-		int rowId =  (int)database.insert(DATABASE_TABLE, null, restaurantValues);
-		restaurant.setId(rowId);
-		return rowId > 0;
+		long result =  database.insert(DATABASE_TABLE, null, restaurantValues);
+		return result > 0;
 	}
 
 	
@@ -83,20 +82,20 @@ public class RestaurantDBAdapter {
 
 		ContentValues updateValues = createValues(restaurant);
 		return (database.update
-				(DATABASE_TABLE, updateValues, KEY_ROW_ID + "=" + restaurant.getId(), null) > 0);
+				(DATABASE_TABLE, updateValues, KEY_ID + "=" + restaurant.getId(), null) > 0);
 	}
 
 	/**
 	 * Delete a restaurant from the database
-	 * @param row_id The row id of the restaurant
-	 * @return       The number of row removed
+	 * @param id The id of the restaurant
+	 * @return   The number of row removed
 	 */
-	public boolean deleteRestaurantByRowId (int row_id) {
+	public boolean deleteRestaurantByRowId (String id) {
 		if (database == null || !database.isOpen()) {
 			openDatabase();
 		}
 
-		return database.delete(DATABASE_TABLE, KEY_ROW_ID + "=" + row_id, null) > 0;
+		return database.delete(DATABASE_TABLE, KEY_ID + "=" + id, null) > 0;
 	}
 
 	/**
@@ -120,7 +119,7 @@ public class RestaurantDBAdapter {
 	}
 	
 	//Return a Restaurant. If there is any error, return null
-	public Restaurant getRestaurantByRowId (int row_id) throws SQLException  {
+	public Restaurant getRestaurantById (int id) throws SQLException  {
 		if (database == null || !database.isOpen()) {
 			openDatabase();
 		}
@@ -129,12 +128,12 @@ public class RestaurantDBAdapter {
 
 		Cursor mCursor = 
 				database.query(DATABASE_TABLE,
-							   new String[] {KEY_ROW_ID,
+							   new String[] {KEY_ID,
 											 KEY_NAME_ID,
 											 KEY_LATITUDE_ID,
 											 KEY_LONGITUDE_ID
 							                 },
-				                KEY_ROW_ID + "=" + row_id,
+							    KEY_ID + "=" + id,
 				                null,
 				                null,
 				                null,
@@ -154,7 +153,7 @@ public class RestaurantDBAdapter {
 
 		Cursor mCursor = 
 				database.query(DATABASE_TABLE,
-						   new String[] {KEY_ROW_ID,
+						   new String[] {KEY_ID,
 										 KEY_NAME_ID,
 										 KEY_LATITUDE_ID,
 										 KEY_LONGITUDE_ID
@@ -177,10 +176,10 @@ public class RestaurantDBAdapter {
 		
 		private String CREATE_TABLE =
 				"create table if not exists " + DATABASE_TABLE + " ( " +
-										   KEY_ROW_ID + " integer primary key autoincrement, " +
+						                   KEY_ID + " text primary key, " +
 										   KEY_NAME_ID + " text not null, " +
-										   KEY_LATITUDE_ID + " real, " +
-										   KEY_LONGITUDE_ID + " real);";
+										   KEY_LATITUDE_ID + " real not null, " +
+										   KEY_LONGITUDE_ID + " real not null);";
 	
 		// Method is called during creation of the database
 		@Override
@@ -211,11 +210,15 @@ public class RestaurantDBAdapter {
 	//Create a content values for the database based on a Restaurant
 	// All the values are checked.
 	private ContentValues createValues (Restaurant restaurant) {
-		
+
 		Log.i(LOG_TAG, "Creating the content values from a restaurant");
 		ContentValues contentValues = new ContentValues();
-	
+
 		//Get each one of the fields
+		// Id
+		String id = restaurant.getId();
+		contentValues.put(KEY_ID, id);
+
 		// Name
 		String name = restaurant.getName();
 		contentValues.put(KEY_NAME_ID, name);
@@ -243,9 +246,9 @@ public class RestaurantDBAdapter {
 					"to the position " + position);
 		} else {	
 	
-			// Row id
-			int rowId = mCursor.getInt(mCursor.getColumnIndex(KEY_ROW_ID));
-			
+			// id
+			String id = mCursor.getString(mCursor.getColumnIndex(KEY_ID));
+
 			// Name
 			String name = mCursor.getString(mCursor.getColumnIndex(KEY_NAME_ID));
 
@@ -255,9 +258,9 @@ public class RestaurantDBAdapter {
 			// Longitude
 			double longitude = mCursor.getDouble(mCursor.getColumnIndex(KEY_LONGITUDE_ID));
 
-			result = new Restaurant(rowId, name, latitude, longitude);
+			result = new Restaurant(id, name, latitude, longitude);
 		}
-		
+
 		return result;
 	}
 
