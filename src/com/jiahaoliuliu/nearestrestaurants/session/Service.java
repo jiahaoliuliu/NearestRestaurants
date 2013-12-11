@@ -40,8 +40,8 @@ public class Service {
     
     // Radius
     private static final String RADIUS_KEY = "radius";
-    private static final String RADIUS_VALUE = "1609"; // 1 mile is more or less 1609 meters
-    
+    private static final String RADIUS_VALUE = String.valueOf(Session.DEFAULT_RANGE); // The radius is defined by the session
+
     // Sensor
     private static final String SENSOR_KEY = "sensor";
     private static final String SENSOR_VALUE = "false"; // Because the sensor is always false, it is better to save it as String

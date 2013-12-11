@@ -15,13 +15,13 @@ public class ErrorHandler {
     public enum RequestStatus {
         // Ok messages
     	REQUEST_OK,
-    	
+
     	// Error from the user session
     	ERROR_SERVER_GENERIC,
-    	
+
     	// Error when it is communicating with the server
     	ERROR_REQUEST_NOK, ERROR_REQUEST_NOK_DATA_VALIDATION,
-    	ERROR_REQUEST_NOK_HTTP_HOST_NO_CONNECTION;
+    	ERROR_REQUEST_NOK_HTTP_NO_CONNECTION;
     }
 
 	public static boolean isError(RequestStatus requestStatus) {
@@ -44,13 +44,8 @@ public class ErrorHandler {
 		case REQUEST_OK:
 			requestMessage = context.getResources().getString(R.string.message_request_ok);
 			break;
-		case ERROR_REQUEST_NOK_HTTP_HOST_NO_CONNECTION:
-			// Check if the user has internet connection
-			if (!Connectivity.isNetworkAvailable(context)) {
-				requestMessage = context.getResources().getString(R.string.error_message_internet_connection);
-			} else {
-				requestMessage = context.getResources().getString(R.string.error_message_server_generic);
-			}
+		case ERROR_REQUEST_NOK_HTTP_NO_CONNECTION:
+			requestMessage = context.getResources().getString(R.string.error_message_internet_connection);
 			break;
 		case ERROR_SERVER_GENERIC:
 			requestMessage = context.getResources().getString(R.string.error_message_server_generic);

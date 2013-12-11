@@ -3,6 +3,7 @@ package com.jiahaoliuliu.nearestrestaurants.session;
 import java.io.ByteArrayOutputStream;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -520,10 +521,13 @@ public class HttpRequest {
                 }
             } catch (HttpHostConnectException httpHostConnectException) {
             	Log.e(LOG_TAG, httpHostConnectException.getLocalizedMessage(), httpHostConnectException);
-            	requestStatus = RequestStatus.ERROR_REQUEST_NOK_HTTP_HOST_NO_CONNECTION;
+            	requestStatus = RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION;
             } catch (ConnectTimeoutException connectTimeoutException) {
             	Log.e(LOG_TAG, connectTimeoutException.getLocalizedMessage(), connectTimeoutException);
-            	requestStatus = RequestStatus.ERROR_REQUEST_NOK_HTTP_HOST_NO_CONNECTION;
+            	requestStatus = RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION;
+            } catch (UnknownHostException unknownHostException) {
+            	Log.e(LOG_TAG, unknownHostException.getLocalizedMessage(), unknownHostException);
+            	requestStatus = RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Error requesting data to the backend. " + uri.toString(), e);
                 requestStatus = RequestStatus.ERROR_REQUEST_NOK;

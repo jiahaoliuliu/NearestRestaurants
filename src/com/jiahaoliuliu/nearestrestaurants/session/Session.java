@@ -3,12 +3,14 @@ package com.jiahaoliuliu.nearestrestaurants.session;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -25,6 +27,8 @@ import com.jiahaoliuliu.nearestrestaurants.session.Preferences.StringId;
 public final class Session {
 
     private static final String LOG_TAG = Session.class.getSimpleName();
+    // The default range, which is 1 mile (1609 meters)
+    public static final int DEFAULT_RANGE = 1609;
 
     private Service service;
 
@@ -126,10 +130,10 @@ public final class Session {
 
     //=========================================== Basic methods ==============================
 
-	public void getRestaurantsNearby(LatLng myPosition,
+	public void getRestaurantsNearby(final LatLng myPosition,
 			final RequestRestaurantsCallback requestRestaurantsCallback) {
 		service.getRestaurantsNearby(myPosition, new RequestJSONCallback() {
-			
+
 			@Override
 			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
@@ -161,12 +165,18 @@ public final class Session {
 						// If everything went OK, return it.
 						requestRestaurantsCallback.done(restaurantsList, null, RequestStatus.REQUEST_OK);
 				} else {
-					// TODO: Check the error
 					// If the error is about Internet connection, calculate the possible restaurants within the 
 					// range and return it to the caller
-					requestRestaurantsCallback.done(null,
-							ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
-							requestStatus);
+					if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION) {
+						List<Restaurant> restaurantsNearsOffline = getNearRestaurants(myPosition);
+						requestRestaurantsCallback.done(restaurantsNearsOffline,
+								ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+								requestStatus);
+					} else {
+						requestRestaurantsCallback.done(null,
+								ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+								requestStatus);
+					}
 				}
 			}
 		});
@@ -233,5 +243,41 @@ public final class Session {
 
 	private void setRestaurants(HashMap<String, Restaurant> restaurants) {
 		this.restaurants = restaurants;
+	}
+
+    //=========================================== Private methods ==============================
+
+	/**
+	 * Go through all the restaurants saved offline and return those which has range no farer than
+	 * designed distance
+	 * @param myPosition The actual position of the user
+	 * @return           A list of restaurants whom are in the range which the center is the users position
+	 */
+	private List<Restaurant> getNearRestaurants(LatLng myPosition) {
+		List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
+		if (myPosition == null) {
+			Log.e(LOG_TAG, "Error trying to get the list of near restaurants when the user's position is null");
+			return restaurantsList;
+		}
+
+		Location myLocation = new Location("");
+		myLocation.setLatitude(myPosition.latitude);
+		myLocation.setLongitude(myPosition.longitude);
+
+		Set<String> ids = restaurants.keySet();
+		for (String id: ids) {
+			Restaurant restaurant = restaurants.get(id);
+			LatLng restaurantPosition = restaurant.getPosition();
+			Location restaurantLocation = new Location("");
+			
+			restaurantLocation.setLatitude(restaurantPosition.latitude);
+			restaurantLocation.setLongitude(restaurantPosition.longitude);
+			
+			if (((int)restaurantLocation.distanceTo(myLocation)) <= DEFAULT_RANGE ) {
+				restaurantsList.add(restaurant);
+			}
+		}
+
+		return restaurantsList;
 	}
 }
