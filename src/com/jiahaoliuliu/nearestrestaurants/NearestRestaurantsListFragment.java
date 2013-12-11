@@ -86,25 +86,41 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
         }
 
         session.getRestaurantsNearby(myActualPosition, new RequestRestaurantsCallback() {
-            
+
             @Override
             public void done(List<Restaurant> restaurants, String errorMessage,
                     RequestStatus requestStatus) {
                 if (!ErrorHandler.isError(requestStatus)) {
                     Log.v(LOG_TAG, "List of the restaurants returned correctly");
-                    // Check if the restaurant list adapter exists before
-                    // If not
-                    if (restaurantListAdapter == null) {
-                        restaurantListAdapter = new RestaurantListAdapter(context, restaurants);
-                        setListAdapter(restaurantListAdapter);
-                    } else {
-                        restaurantListAdapter.setRestaurants(restaurants);
-                    }
+                    showRestaurantList(restaurants);
                 } else {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+
+                    // If there is any error about Internet connection but the list of
+                    // restaurants has been retrieved offline, draw them on the map
+                    if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
+                    		&& restaurants != null) {
+                    	showRestaurantList(restaurants);
+                    }
+
                 }
             }
         });
+    }
+
+    /**
+     * Show the list of restaurants as list
+     * @param restaurants
+     */
+    private void showRestaurantList(List<Restaurant> restaurants) {
+        // Check if the restaurant list adapter exists before
+        // If not
+        if (restaurantListAdapter == null) {
+            restaurantListAdapter = new RestaurantListAdapter(context, restaurants);
+            setListAdapter(restaurantListAdapter);
+        } else {
+            restaurantListAdapter.setRestaurants(restaurants);
+        }
     }
 
     /**
