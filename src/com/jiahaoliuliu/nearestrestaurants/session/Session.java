@@ -42,6 +42,7 @@ public final class Session {
     // The data of the user
     private Context context;
     private HashMap<String, Restaurant> restaurants;
+    private LatLng lastPositionKnown;
 
     /**
      * The constructor of the session.
@@ -138,6 +139,7 @@ public final class Session {
 			public void done(JSONArray jsonArray, final String extraValue, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
+						lastPositionKnown = myPosition;
 						final List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
 						addsRestaurantsToTheList(jsonArray, restaurantsList);
 						requestRestaurantsCallback.done(restaurantsList, extraValue, null, RequestStatus.REQUEST_OK);
@@ -176,9 +178,24 @@ public final class Session {
 			@Override
 			public void done(JSONArray jsonArray, String newNextPageToken, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
-					// TODO
+					final List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
+					addsRestaurantsToTheList(jsonArray, restaurantsList);
+					requestRestaurantsCallback.done(restaurantsList, newNextPageToken, null, RequestStatus.REQUEST_OK);
 				} else {
-					// TODO
+					// If the error is about Internet connection, calculate the possible restaurants within the 
+					// range and return it to the caller
+					if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION) {
+						List<Restaurant> restaurantsNearsOffline = getNearRestaurants(lastPositionKnown);
+						requestRestaurantsCallback.done(restaurantsNearsOffline,
+								null,
+								ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+								requestStatus);
+					} else {
+						requestRestaurantsCallback.done(null,
+								null,
+								ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+								requestStatus);
+					}
 				}
 			}
 		});

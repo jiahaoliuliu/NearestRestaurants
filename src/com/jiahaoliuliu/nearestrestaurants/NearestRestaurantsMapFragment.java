@@ -56,8 +56,9 @@ public class NearestRestaurantsMapFragment extends Fragment
 
     private static final int DEFAULT_ZOOM_LEVEL = 12;
     private Marker userActualPositionMarker;
-    // The list of the restaurants
+    // The list of the restaurants markers
     private List<Marker> restaurantMarkers;
+    private List<Restaurant> restaurants;
 
     private Context context;
     private Session session;
@@ -210,13 +211,17 @@ public class NearestRestaurantsMapFragment extends Fragment
         session.getRestaurantsNearby(myActualPosition, new RequestRestaurantsCallback() {
             
             @Override
-            public void done(List<Restaurant> restaurants,
+            public void done(List<Restaurant> newRestaurants,
                              String nextPageToken,
                              String errorMessage,
                              RequestStatus requestStatus) {
                 if (!ErrorHandler.isError(requestStatus)) {
                     Log.v(LOG_TAG, "List of the restaurants returned correctly");
-                    	drawRestaurantsOnTheMap(restaurants);
+                    restaurants = newRestaurants;
+                	drawRestaurantsOnTheMap();
+                	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
+                		getMoreRestaurants(nextPageToken);
+                	}
                 } else {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 
@@ -224,7 +229,7 @@ public class NearestRestaurantsMapFragment extends Fragment
                     // restaurants has been retrieved offline, draw them on the map
                     if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
                     		&& restaurants != null) {
-                    	drawRestaurantsOnTheMap(restaurants);
+                    	drawRestaurantsOnTheMap();
                     }
                 }
             }
@@ -232,11 +237,47 @@ public class NearestRestaurantsMapFragment extends Fragment
     }
 
     /**
+     * Get more restaurants and append them to the existence list of restaurants
+     * @param nextPageToken
+     */
+    private void getMoreRestaurants(String nextPageToken) {
+    	if (nextPageToken == null || nextPageToken.equalsIgnoreCase("")) {
+    		Log.e(LOG_TAG, "Error trying to get the next page. The token is not valud");
+    		return;
+    	}
+    	
+    	session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
+			
+			@Override
+			public void done(List<Restaurant> newRestaurants, String nextPageToken,
+					String errorMessage, RequestStatus requestStatus) {
+				if (!ErrorHandler.isError(requestStatus)) {
+					restaurants.addAll(newRestaurants);
+					drawRestaurantsOnTheMap();
+                	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
+                		getMoreRestaurants(nextPageToken);
+                	}
+				} else {
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+
+                    // If there is any error about Internet connection but the list of
+                    // restaurants has been retrieved offline, draw them on the map
+                    if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
+                    		&& restaurants != null) {
+                    	restaurants = newRestaurants;
+                    	drawRestaurantsOnTheMap();
+                    }
+				}
+			}
+		});
+    }
+
+    /**
      * Draw the list of the restaurants on the map.
      * If there was any restaurant already drawn on the map, remove them.
      * @param restaurants The list of the restaurants to be drawn.
      */
-	private void drawRestaurantsOnTheMap(List<Restaurant> restaurants) {
+	private void drawRestaurantsOnTheMap() {
 		// Remove any previous markers
 	    if (restaurantMarkers != null) {
 	        for (Marker marker : restaurantMarkers) {

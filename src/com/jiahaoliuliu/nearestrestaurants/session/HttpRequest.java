@@ -233,7 +233,7 @@ public class HttpRequest {
 	                                		JSONArray jsonArray = new JSONArray(jsonObject.getString("results"));
 	                                		
 	                                		// Check for next page token parameter
-	                                		if (!jsonObject.has("next_page_token")) {
+	                                		if (jsonObject.has("next_page_token")) {
 	                                			String nextPageToken = jsonObject.getString("next_page_token");
 	                                			jsonHandler.done(jsonArray, nextPageToken, requestStatus);
 	                                		// If next page token is not found
