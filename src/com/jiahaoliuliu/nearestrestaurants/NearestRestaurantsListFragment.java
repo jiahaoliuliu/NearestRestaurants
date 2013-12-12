@@ -9,6 +9,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnScrollChangedListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +32,7 @@ import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
  * @author Jiahao Liu
  */
 public class NearestRestaurantsListFragment extends SherlockListFragment
-    implements OnUpdatePositionListener{
+    implements OnUpdatePositionListener {
 
     private static final String LOG_TAG = NearestRestaurantsListFragment.class.getSimpleName();
 
@@ -43,7 +46,16 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
     private RestaurantListAdapter restaurantListAdapter;
 
     // The user position
-    private LatLng myActualPosition;
+    private LatLng myActualPosition; 
+
+    // The token for the next page
+    private String nextPageToken;
+
+	private int currentFirstVisibleItem;
+
+	private int currentVisibleItemCount;
+
+	private int currentScrollState;
 
     @Override
     public void onAttach(Activity activity) {
@@ -62,14 +74,35 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
         }
     }
 
-    @Override  
-      public View onCreateView(LayoutInflater inflater, ViewGroup container,  
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,  
         Bundle savedInstanceState) {
-        
+    
         // Set the adapter
         return super.onCreateView(inflater, container, savedInstanceState);
-      }
+    }
 
+    @Override
+	public void onResume() {
+    	super.onResume();
+    	this.getListView().setOnScrollListener(new OnScrollListener(){
+		    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		    }
+
+		    public void onScrollStateChanged(AbsListView view, int scrollState) {
+		    	if(scrollState == SCROLL_STATE_IDLE) {
+		    		Log.v(LOG_TAG, "scrolling stopped...");
+	
+			        int first = view.getFirstVisiblePosition();
+			        Log.v(LOG_TAG, "The first element is " + first);
+			        int last =  view.getLastVisiblePosition();
+			        Log.v(LOG_TAG, "The last element is " + last);
+		        }
+		  }
+		});
+    }
+    
+    
     @Override
     public void updatePosition(LatLng newPosition) {
         myActualPosition = newPosition;
@@ -89,11 +122,12 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 
             @Override
             public void done(List<Restaurant> restaurants,
-                             String nextPageToken,
+                             String newNextPageToken,
                              String errorMessage,
                              RequestStatus requestStatus) {
                 if (!ErrorHandler.isError(requestStatus)) {
                     Log.v(LOG_TAG, "List of the restaurants returned correctly");
+                    nextPageToken = newNextPageToken;
                     showRestaurantList(restaurants);
                 } else {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
@@ -174,4 +208,5 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
             return view;
         }
     }
+
 }
