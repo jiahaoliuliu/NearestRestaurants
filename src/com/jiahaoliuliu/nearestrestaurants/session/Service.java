@@ -49,6 +49,9 @@ public class Service {
     // Types (Restaurant)
     private static final String TYPES_KEY = "types";
     private static final String TYPES_VALUE = "restaurant";
+
+    // Next page token
+    private static final String NEXT_PAGE_TOKEN_KEY = "pagetoken";
     
     // Get the list of the restaurants nearby
     private static final RequestMethod RESTAURANTS_NEARBY_REQUEST_METHOD = RequestMethod.RequestMethodGet; 
@@ -78,10 +81,35 @@ public class Service {
         httpRequest.performRequestWithJSONHandler(new RequestJSONCallback() {
 
 			@Override
-			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
-				requestJSONCallback.done(jsonArray, requestStatus);
+			public void done(JSONArray jsonArray, RequestStatus requestStatus, String extraValue) {
+				requestJSONCallback.done(jsonArray, requestStatus, extraValue);
 			}
 		});
 	}
 
+	/**
+	 * Get the next page of Restaurants Nearby
+	 * @param nextPageToken       The token returned by the server to get the next page
+	 * @param requestJSONCallback The callback to call when the data is ready
+	 */
+	protected void getRestaurantsNearbyNextPage(String nextPageToken,
+			final RequestJSONCallback requestJSONCallback) {
+		Uri finalUri = Uri.parse(URL_BASE);
+
+		// The parameters
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put(API_KEY_KEY, API_KEY_VALUE);
+        parameters.put(SENSOR_KEY, SENSOR_VALUE);
+        parameters.put(NEXT_PAGE_TOKEN_KEY, nextPageToken);
+
+        HttpRequest httpRequest = HttpRequest.create(finalUri, RESTAURANTS_NEARBY_REQUEST_METHOD, parameters);
+
+        httpRequest.performRequestWithJSONHandler(new RequestJSONCallback() {
+
+			@Override
+			public void done(JSONArray jsonArray, RequestStatus requestStatus, String extraValue) {
+				requestJSONCallback.done(jsonArray, requestStatus, extraValue);
+			}
+		});
+	}
 }

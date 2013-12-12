@@ -219,36 +219,43 @@ public class HttpRequest {
 	                                		// If the result status is not ok, then something went wrong
 	                                		if (!resultStatus.equalsIgnoreCase("OK")) {
 	                                			Log.e(LOG_TAG, "The result returned is not ok " + resultStatus);
-	                                			jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                			jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION, null);
 	                                			return;
 	                                		}
 	                                		
 	                                		// if the result is not found, return error
 	                                		if (!jsonObject.has("results")) {
 	                                			Log.e(LOG_TAG, "The results does not exist");
-	                                			jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                			jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION, null);
 	                                			return;
 	                                		}
 	                                		
 	                                		JSONArray jsonArray = new JSONArray(jsonObject.getString("results"));
-			                                jsonHandler.done(jsonArray, requestStatus);
 	                                		
+	                                		// Check for next page token parameter
+	                                		if (!jsonObject.has("next_page_token")) {
+	                                			String nextPageToken = jsonObject.getString("next_page_token");
+	                                			jsonHandler.done(jsonArray, requestStatus, nextPageToken);
+	                                		// If next page token is not found
+	                                		} else {
+	                                			jsonHandler.done(jsonArray, requestStatus, null);
+	                                		}
 	                                	// if the status does not exists, then there must be some data error
 	                                	} else {
 	                                		Log.e(LOG_TAG, "The status does not exist.");
-	                                		jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                		jsonHandler.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION, null);
 	                                	}
 	                                } else {
-	                                	jsonHandler.done(null, requestStatus);
+	                                	jsonHandler.done(null, requestStatus, null);
 	                                }
 	                            // If there is any problem parsing the server data returned
 	                            // Return the error about the server data
 	                            } catch (Exception exception) {
 	                                Log.e(LOG_TAG, exception.getLocalizedMessage(), exception);
-	                                jsonHandler.done(null, RequestStatus.ERROR_SERVER_GENERIC);
+	                                jsonHandler.done(null, RequestStatus.ERROR_SERVER_GENERIC, null);
 	                            }
 	                        } else {
-	                            jsonHandler.done(null, requestStatus);
+	                            jsonHandler.done(null, requestStatus, null);
 	                        }
                         }
                     });

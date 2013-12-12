@@ -135,35 +135,41 @@ public final class Session {
 		service.getRestaurantsNearby(myPosition, new RequestJSONCallback() {
 
 			@Override
-			public void done(JSONArray jsonArray, RequestStatus requestStatus) {
+			public void done(JSONArray jsonArray, RequestStatus requestStatus, final String extraValue) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
-
-						List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
-						// Parse the list of the restaurants
-						for (int i = 0; i < jsonArray.length(); i++) {
-							try {
-								JSONObject jsonObject = jsonArray.getJSONObject(i);
-								Restaurant restaurant = new Restaurant(jsonObject);
-								restaurantsList.add(restaurant);
-
-								// Check if the restaurant already exists in the hashMap
-								// If not, insert it into the temporal hashmap
-								// and the database
-								if (!restaurants.containsKey(restaurant.getId())) {
-									// Insert data
-									restaurants.put(restaurant.getId(), restaurant);
-									// Save the data into the database
-									restaurantDBAdapter.insertNewRestaurant(restaurant);
+						final List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
+						addsRestaurantsToTheList(jsonArray, restaurantsList);
+						// Check for next page token which is stored as extra value
+						if (extraValue != null && !extraValue.equalsIgnoreCase("")) {
+							getRestaurantsNearbyNextPage(extraValue, new RequestJSONCallback() {
+								
+								@Override
+								public void done(JSONArray jsonArray, RequestStatus requestStatus,
+										String extraValue) {
+									if (!ErrorHandler.isError(requestStatus)) {
+										addsRestaurantsToTheList(jsonArray, restaurantsList);
+										requestRestaurantsCallback.done(restaurantsList, null, RequestStatus.REQUEST_OK);
+									} else {
+										// If the error is about Internet connection, calculate the possible restaurants within the 
+										// range and return it to the caller
+										if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION) {
+											List<Restaurant> restaurantsNearsOffline = getNearRestaurants(myPosition);
+											requestRestaurantsCallback.done(restaurantsNearsOffline,
+													ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+													requestStatus);
+										} else {
+											requestRestaurantsCallback.done(null,
+													ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
+													requestStatus);
+										}
+									}
 								}
-							} catch (JSONException e) {
-								Log.e(LOG_TAG, "Error parsing the restaurant returned by Google at the position " +
-							          i + " of" + jsonArray.toString());
-							}
+							});
+						// If no more data could be retrieved, send it back
+						} else {
+							requestRestaurantsCallback.done(restaurantsList, null, RequestStatus.REQUEST_OK);
 						}
-
-						// If everything went OK, return it.
-						requestRestaurantsCallback.done(restaurantsList, null, RequestStatus.REQUEST_OK);
 				} else {
 					// If the error is about Internet connection, calculate the possible restaurants within the 
 					// range and return it to the caller
@@ -279,5 +285,70 @@ public final class Session {
 		}
 
 		return restaurantsList;
+	}
+
+	private void getRestaurantsNearbyNextPage(String nextPageToken,
+			final RequestJSONCallback requestJSONCallback) {
+		// Check the precondition
+		if (nextPageToken == null || nextPageToken.equalsIgnoreCase("")) {
+			Log.e(LOG_TAG, "Error trying to get the next page of restaurnats nearby."
+					+ " The next page token is null");
+			requestJSONCallback.done(null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION, null);
+			return;
+		}
+
+		service.getRestaurantsNearbyNextPage(nextPageToken, new RequestJSONCallback() {
+			
+			@Override
+			public void done(JSONArray jsonArray, RequestStatus requestStatus,
+					String newNextPageToken) {
+				if (!ErrorHandler.isError(requestStatus)) {
+					// Check for next page
+					// If there is not more extra page
+					if (newNextPageToken == null || newNextPageToken.equalsIgnoreCase("")) {
+						requestJSONCallback.done(jsonArray, requestStatus, newNextPageToken);
+					// If there is more extra page (up to three)
+					} else {
+						getRestaurantsNearbyNextPage(newNextPageToken, new RequestJSONCallback() {
+							
+							@Override
+							public void done(JSONArray newJsonArray, RequestStatus requestStatus,
+									String nextPageToken) {
+								if (!ErrorHandler.isError(requestStatus)) {
+									// TODO: Set the logic here
+								}
+							}
+						});
+					}
+				} else {
+					Log.e(LOG_TAG, "Error getting the next page with the token " + newNextPageToken);
+					requestJSONCallback.done(null, requestStatus, null);
+				}
+			}
+		});
+	}
+
+	private void addsRestaurantsToTheList(JSONArray jsonArray, List<Restaurant> restaurantsList) {
+		// Parse the list of the restaurants
+		for (int i = 0; i < jsonArray.length(); i++) {
+			try {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				Restaurant restaurant = new Restaurant(jsonObject);
+				restaurantsList.add(restaurant);
+	
+				// Check if the restaurant already exists in the hashMap
+				// If not, insert it into the temporal hashmap
+				// and the database
+				if (!restaurants.containsKey(restaurant.getId())) {
+					// Insert data
+					restaurants.put(restaurant.getId(), restaurant);
+					// Save the data into the database
+					restaurantDBAdapter.insertNewRestaurant(restaurant);
+				}
+			} catch (JSONException e) {
+				Log.e(LOG_TAG, "Error parsing the restaurant returned by Google at the position " +
+			          i + " of" + jsonArray.toString());
+			}
+		}
 	}
 }
