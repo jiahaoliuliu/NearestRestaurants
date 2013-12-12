@@ -210,8 +210,10 @@ public class NearestRestaurantsMapFragment extends Fragment
         session.getRestaurantsNearby(myActualPosition, new RequestRestaurantsCallback() {
             
             @Override
-            public void done(List<Restaurant> restaurants, String errorMessage,
-                    RequestStatus requestStatus) {
+            public void done(List<Restaurant> restaurants,
+                             String nextPageToken,
+                             String errorMessage,
+                             RequestStatus requestStatus) {
                 if (!ErrorHandler.isError(requestStatus)) {
                     Log.v(LOG_TAG, "List of the restaurants returned correctly");
                     	drawRestaurantsOnTheMap(restaurants);

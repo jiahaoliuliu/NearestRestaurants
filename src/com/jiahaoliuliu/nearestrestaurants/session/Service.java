@@ -81,8 +81,8 @@ public class Service {
         httpRequest.performRequestWithJSONHandler(new RequestJSONCallback() {
 
 			@Override
-			public void done(JSONArray jsonArray, RequestStatus requestStatus, String extraValue) {
-				requestJSONCallback.done(jsonArray, requestStatus, extraValue);
+			public void done(JSONArray jsonArray, String extraValue, RequestStatus requestStatus) {
+				requestJSONCallback.done(jsonArray, extraValue, requestStatus);
 			}
 		});
 	}
@@ -107,8 +107,8 @@ public class Service {
         httpRequest.performRequestWithJSONHandler(new RequestJSONCallback() {
 
 			@Override
-			public void done(JSONArray jsonArray, RequestStatus requestStatus, String extraValue) {
-				requestJSONCallback.done(jsonArray, requestStatus, extraValue);
+			public void done(JSONArray jsonArray, String extraValue, RequestStatus requestStatus) {
+				requestJSONCallback.done(jsonArray, extraValue, requestStatus);
 			}
 		});
 	}

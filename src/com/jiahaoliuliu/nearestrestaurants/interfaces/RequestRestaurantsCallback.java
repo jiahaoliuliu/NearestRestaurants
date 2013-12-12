@@ -16,10 +16,12 @@ public interface RequestRestaurantsCallback {
      * This class should be used only by Session to return a
      * specific element
      * @param restaurants   The list of restaurants parsed by the Session
+     * @param nextPageToken The token for the next page. It could be null or empty
      * @param errorMessage  The error message to show if there is any error
      * @param requestStatus Indication of if any error happened or not
      */
     void done(final List<Restaurant> restaurants,
+    		  final String nextPageToken,
     		  final String errorMessage,
     		  final RequestStatus requestStatus);
 }
