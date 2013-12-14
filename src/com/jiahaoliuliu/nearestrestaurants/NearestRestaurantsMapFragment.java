@@ -257,7 +257,7 @@ public class NearestRestaurantsMapFragment extends Fragment
      */
     private void getMoreRestaurants(final String nextPageToken) {
     	if (nextPageToken == null || nextPageToken.equalsIgnoreCase("")) {
-    		Log.e(LOG_TAG, "Error trying to get the next page. The token is not valud");
+    		Log.e(LOG_TAG, "Error trying to get the next page. The token is not valid");
     		return;
     	}
 
@@ -284,18 +284,20 @@ public class NearestRestaurantsMapFragment extends Fragment
 		        	session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
 		    			
 		    			@Override
-		    			public void done(List<Restaurant> newRestaurants, String nextPageToken,
+		    			public void done(List<Restaurant> newRestaurants, String newNextPageToken,
 		    					String errorMessage, RequestStatus requestStatus) {
 		    				if (!ErrorHandler.isError(requestStatus)) {
 		    					restaurants.addAll(newRestaurants);
 		    					drawRestaurantsOnTheMap();
 		                    	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
-		                    		getMoreRestaurants(nextPageToken);
+		                    		getMoreRestaurants(newNextPageToken);
 		                    	}
 		    				} else {
 		                    	// If the request went ok but the data is not valid, but the request
 		    					// has been rejected, wait for double time
 		                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
+		                    		// It is important to use the old next page token because in this
+		                    		// case, the new next page token is null.
 		                    		getMoreRestaurants(nextPageToken);
 		                    	} else {
 		                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
