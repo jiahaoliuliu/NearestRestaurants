@@ -13,6 +13,9 @@
     <string name="updating_users_position">Updating your position</string>
     <string name="looking_users_position">Looking for your position</string>
     
+    <!-- List -->
+    <string name="loadin_new_restaurants"> Loading new restaurants. Please wait </string>
+
     <!-- Messages -->
     <string name="error_message_google_map_not_found">Google Maps not found. Your device is not compatible with this application.</string>
     <string name="message_request_ok">Response receiverd correctly</string>

@@ -261,7 +261,7 @@ public class NearestRestaurantsMapFragment extends Fragment
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 
                     // If there is any error about Internet connection but the list of
-                    // restaurants has been retrieved offline, draw them on the map
+                    // restaurants has been retrieved offLine, draw them on the map
                     if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
                     		&& restaurants != null) {
                     	restaurants = newRestaurants;

@@ -29,8 +29,8 @@ public class Service {
     /**
      * The base URL
      */
-    private static final String URL_BASE = "https://maps.googleapis.com/maps/api/place/search/json";
-    
+    private static final String URL_BASE = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+
     // The API key
     private static final String API_KEY_KEY = "key";
     private static final String API_KEY_VALUE = "";
