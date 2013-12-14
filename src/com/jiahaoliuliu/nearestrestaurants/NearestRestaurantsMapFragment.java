@@ -261,15 +261,9 @@ public class NearestRestaurantsMapFragment extends Fragment
     		return;
     	}
 
-    	activity.runOnUiThread(new Runnable() {
-			
-			@Override
-			public void run() {
-		    	GetMoreRestaurantsTimerTask getMoreRestaurantsTimerTask = new GetMoreRestaurantsTimerTask(nextPageToken);
-		    	timer = new Timer();
-		    	timer.schedule(getMoreRestaurantsTimerTask, DEFAULT_MILLISEC_WAIT_GOOGLE_API);
-			}
-		});
+    	GetMoreRestaurantsTimerTask getMoreRestaurantsTimerTask = new GetMoreRestaurantsTimerTask(nextPageToken);
+    	timer = new Timer();
+    	timer.schedule(getMoreRestaurantsTimerTask, DEFAULT_MILLISEC_WAIT_GOOGLE_API);
     }
 
     private class GetMoreRestaurantsTimerTask extends TimerTask {
@@ -281,36 +275,44 @@ public class NearestRestaurantsMapFragment extends Fragment
     	}
 
     	public void run() {
-        	session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
-    			
-    			@Override
-    			public void done(List<Restaurant> newRestaurants, String nextPageToken,
-    					String errorMessage, RequestStatus requestStatus) {
-    				if (!ErrorHandler.isError(requestStatus)) {
-    					restaurants.addAll(newRestaurants);
-    					drawRestaurantsOnTheMap();
-                    	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
-                    		getMoreRestaurants(nextPageToken);
-                    	}
-    				} else {
-                    	// If the request went ok but the data is not valid, but the request
-    					// has been rejected, wait for double time
-                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
-                    		getMoreRestaurants(nextPageToken);
-                    	} else {
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+    		// It is important to run it on the main thread because HttpRequest use the handler
+    		// to run the callback on the Main Thread
+    		activity.runOnUiThread(new Runnable() {
+				
+				@Override
+				public void run() {
+		        	session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
+		    			
+		    			@Override
+		    			public void done(List<Restaurant> newRestaurants, String nextPageToken,
+		    					String errorMessage, RequestStatus requestStatus) {
+		    				if (!ErrorHandler.isError(requestStatus)) {
+		    					restaurants.addAll(newRestaurants);
+		    					drawRestaurantsOnTheMap();
+		                    	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
+		                    		getMoreRestaurants(nextPageToken);
+		                    	}
+		    				} else {
+		                    	// If the request went ok but the data is not valid, but the request
+		    					// has been rejected, wait for double time
+		                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
+		                    		getMoreRestaurants(nextPageToken);
+		                    	} else {
+		                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 
-                            // If there is any error about Internet connection but the list of
-                            // restaurants has been retrieved offLine, draw them on the map
-                            if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
-                            		&& restaurants != null) {
-                            	restaurants = newRestaurants;
-                            	drawRestaurantsOnTheMap();
-                            }
-                    	}
-    				}
-    			}
-        	});
+		                            // If there is any error about Internet connection but the list of
+		                            // restaurants has been retrieved offLine, draw them on the map
+		                            if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
+		                            		&& restaurants != null) {
+		                            	restaurants = newRestaurants;
+		                            	drawRestaurantsOnTheMap();
+		                            }
+		                    	}
+		    				}
+		    			}
+		        	});
+				}
+			});
     	}
     }
     /**
