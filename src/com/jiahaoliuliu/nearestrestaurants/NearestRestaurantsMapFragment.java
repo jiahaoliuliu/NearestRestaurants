@@ -56,6 +56,11 @@ public class NearestRestaurantsMapFragment extends Fragment
     //    Retrying the request with the same next_page_token will return the next page of results."
     private static final int DEFAULT_MILLISEC_WAIT_GOOGLE_API = 1000;
 
+    // The maximum number of tries if with the right Next page token and having
+    // Internet connection the Google Place API still returns invalid response.
+    private static final int MAXIMUM_NUMBER_TRY_WAITING_GOOGLE_API = 10;
+    private int numberTryWaitingGoogleApi = 1;
+
     // Interfaces
     private OnPositionRequestedListener onPositionRequestedListener;
 
@@ -297,9 +302,15 @@ public class NearestRestaurantsMapFragment extends Fragment
 		                    	// If the request went ok but the data is not valid, then the request
 		    					// has been rejected, try it again
 		                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
-		                    		// It is important to use the old next page token because in this
-		                    		// case, the new next page token is null.
-		                    		getMoreRestaurants(nextPageToken);
+		                    		if (numberTryWaitingGoogleApi < MAXIMUM_NUMBER_TRY_WAITING_GOOGLE_API) {
+		                    			numberTryWaitingGoogleApi++;
+			                    		// It is important to use the old next page token because in this
+			                    		// case, the new next page token is null.
+			                    		getMoreRestaurants(nextPageToken);
+		                    		} else {
+		                    			// Otherwise reset the number of tries
+		                    			numberTryWaitingGoogleApi = 1;
+		                    		}
 		                    	} else {
 		                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 
