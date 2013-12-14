@@ -21,6 +21,7 @@ public class ErrorHandler {
 
     	// Error when it is communicating with the server
     	ERROR_REQUEST_NOK, ERROR_REQUEST_NOK_DATA_VALIDATION,
+    	ERROR_REQUEST_OK_DATA_INVALID,
     	ERROR_REQUEST_NOK_HTTP_NO_CONNECTION;
     }
 

@@ -219,7 +219,15 @@ public class HttpRequest {
 	                                		// If the result status is not ok, then something went wrong
 	                                		if (!resultStatus.equalsIgnoreCase("OK")) {
 	                                			Log.e(LOG_TAG, "The result returned is not ok " + resultStatus);
-	                                			jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                			// Check for request status and result Status.
+	                                			// If Request status is REQUEST_OK and the result status is INVALID_REQUEST,
+	                                			// then the error is because the app is requesting a second page when it is not
+	                                			// ready. In that case returns a different error
+	    	                                	if (requestStatus == RequestStatus.REQUEST_OK && resultStatus.equalsIgnoreCase("INVALID_REQUEST")) {
+	    	                                		jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_OK_DATA_INVALID);
+	    	                                	} else {	
+		                                			jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	    	                                	}
 	                                			return;
 	                                		}
 	                                		
@@ -434,6 +442,9 @@ public class HttpRequest {
                         stringUrl += paramString;
                     }
                     httpGet.setURI(new URI(stringUrl));
+                    
+                    Log.d(LOG_TAG, "HTTPGet. The uri is " + stringUrl);
+                    
                     /*
                      * Response from the Http Request
                      */

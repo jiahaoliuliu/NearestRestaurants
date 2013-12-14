@@ -3,6 +3,8 @@ package com.jiahaoliuliu.nearestrestaurants;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -16,6 +18,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -46,6 +49,13 @@ public class NearestRestaurantsMapFragment extends Fragment
     implements OnUpdatePositionListener {
 
     private static final String LOG_TAG = NearestRestaurantsMapFragment.class.getSimpleName();
+    // The time to be wait by default to have Google Place API ready for more results
+    // See for more details:
+    //   https://developers.google.com/places/documentation/search#PlaceSearchPaging
+    //   "There is a short delay between when a next_page_token is issued, and when it will become valid.
+    //    Requesting the next page before it is available will return an INVALID_REQUEST response.
+    //    Retrying the request with the same next_page_token will return the next page of results."
+    private static final int DEFAULT_MILLISEC_WAIT_GOOGLE_API = 1000;
 
     // Interfaces
     private OnPositionRequestedListener onPositionRequestedListener;
@@ -61,6 +71,7 @@ public class NearestRestaurantsMapFragment extends Fragment
     private List<Restaurant> restaurants;
 
     private Context context;
+    private Activity activity;
     private Session session;
 
     private SupportMapFragment fragment;
@@ -68,6 +79,9 @@ public class NearestRestaurantsMapFragment extends Fragment
     // The user position
     private LatLng myActualPosition;
     private boolean isUserPositionSet = false;
+    
+    // The timer set to get more results
+    private Timer timer;
 
     @Override
     public void onAttach(Activity activity) {
@@ -79,6 +93,7 @@ public class NearestRestaurantsMapFragment extends Fragment
             Log.e(LOG_TAG, "The attached activity must implements the OnPositionRequestedListener", classCastException);
         }
         
+        this.activity = activity; 
         this.context = activity;
         session = Session.getCurrentSession(context);
     }
@@ -240,38 +255,64 @@ public class NearestRestaurantsMapFragment extends Fragment
      * Get more restaurants and append them to the existence list of restaurants
      * @param nextPageToken
      */
-    private void getMoreRestaurants(String nextPageToken) {
+    private void getMoreRestaurants(final String nextPageToken) {
     	if (nextPageToken == null || nextPageToken.equalsIgnoreCase("")) {
     		Log.e(LOG_TAG, "Error trying to get the next page. The token is not valud");
     		return;
     	}
-    	
-    	session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
+
+    	activity.runOnUiThread(new Runnable() {
 			
 			@Override
-			public void done(List<Restaurant> newRestaurants, String nextPageToken,
-					String errorMessage, RequestStatus requestStatus) {
-				if (!ErrorHandler.isError(requestStatus)) {
-					restaurants.addAll(newRestaurants);
-					drawRestaurantsOnTheMap();
-                	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
-                		getMoreRestaurants(nextPageToken);
-                	}
-				} else {
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
-
-                    // If there is any error about Internet connection but the list of
-                    // restaurants has been retrieved offLine, draw them on the map
-                    if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
-                    		&& restaurants != null) {
-                    	restaurants = newRestaurants;
-                    	drawRestaurantsOnTheMap();
-                    }
-				}
+			public void run() {
+		    	GetMoreRestaurantsTimerTask getMoreRestaurantsTimerTask = new GetMoreRestaurantsTimerTask(nextPageToken);
+		    	timer = new Timer();
+		    	timer.schedule(getMoreRestaurantsTimerTask, DEFAULT_MILLISEC_WAIT_GOOGLE_API);
 			}
 		});
     }
 
+    private class GetMoreRestaurantsTimerTask extends TimerTask {
+    	
+    	private String nextPageToken;
+
+    	public GetMoreRestaurantsTimerTask(String nextPageToken) {
+    		this.nextPageToken = nextPageToken;
+    	}
+
+    	public void run() {
+        	session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
+    			
+    			@Override
+    			public void done(List<Restaurant> newRestaurants, String nextPageToken,
+    					String errorMessage, RequestStatus requestStatus) {
+    				if (!ErrorHandler.isError(requestStatus)) {
+    					restaurants.addAll(newRestaurants);
+    					drawRestaurantsOnTheMap();
+                    	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
+                    		getMoreRestaurants(nextPageToken);
+                    	}
+    				} else {
+                    	// If the request went ok but the data is not valid, but the request
+    					// has been rejected, wait for double time
+                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
+                    		getMoreRestaurants(nextPageToken);
+                    	} else {
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+
+                            // If there is any error about Internet connection but the list of
+                            // restaurants has been retrieved offLine, draw them on the map
+                            if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
+                            		&& restaurants != null) {
+                            	restaurants = newRestaurants;
+                            	drawRestaurantsOnTheMap();
+                            }
+                    	}
+    				}
+    			}
+        	});
+    	}
+    }
     /**
      * Draw the list of the restaurants on the map.
      * If there was any restaurant already drawn on the map, remove them.
