@@ -18,7 +18,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -160,8 +159,10 @@ public class NearestRestaurantsMapFragment extends Fragment
 
     @Override
     public void updatePosition(LatLng newPosition) {
-        myActualPosition = newPosition;
-        onPositionUpdated();
+    	if (myActualPosition != newPosition) {
+    		myActualPosition = newPosition;
+    		onPositionUpdated();
+    	}
     }
     
     /**
@@ -289,12 +290,12 @@ public class NearestRestaurantsMapFragment extends Fragment
 		    				if (!ErrorHandler.isError(requestStatus)) {
 		    					restaurants.addAll(newRestaurants);
 		    					drawRestaurantsOnTheMap();
-		                    	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
+		                    	if (newNextPageToken != null && !newNextPageToken.equalsIgnoreCase("")) {
 		                    		getMoreRestaurants(newNextPageToken);
 		                    	}
 		    				} else {
-		                    	// If the request went ok but the data is not valid, but the request
-		    					// has been rejected, wait for double time
+		                    	// If the request went ok but the data is not valid, then the request
+		    					// has been rejected, try it again
 		                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
 		                    		// It is important to use the old next page token because in this
 		                    		// case, the new next page token is null.
