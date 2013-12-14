@@ -11,14 +11,17 @@ import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.session.Session;
 import com.jiahaoliuliu.nearestrestaurants.utils.PositionTracker;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
 /**
@@ -66,6 +69,9 @@ public class NearestRestaurants extends SherlockFragmentActivity
 
     // The interface for the fragment
     private OnUpdatePositionListener onUpdatePositionListener;
+    
+    // The dialog used to warning the user that she is going to exit
+    private AlertDialog exitAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -286,5 +292,43 @@ public class NearestRestaurants extends SherlockFragmentActivity
     @Override
     public LatLng requestPosition() {
         return myPosition;
+    }
+    
+    // =============================================== Others =======================================================
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+        	if (exitAlertDialog == null) {
+        		exitAlertDialog = createExitAlertDialog();
+        	}
+        	
+        	exitAlertDialog.show();
+            return true; // To finish here and say the key has been handled
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+    
+    private AlertDialog createExitAlertDialog() {
+    	return new AlertDialog.Builder(
+                context)
+        .setTitle(getResources().getString(R.string.alert_exit_title))
+        .setMessage(getResources().getString(R.string.alert_exit_message))
+        .setPositiveButton(getResources().getString(R.string.alert_exit_positive_button),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,
+                            int which) {
+                    	finish();
+                    }
+                })
+        .setNegativeButton(getResources().getString(R.string.alert_exit_negative_button),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,
+                            int which) {
+                        dialog.dismiss();
+                    }
+                })
+        .create();
     }
 }

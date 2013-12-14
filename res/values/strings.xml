@@ -4,6 +4,12 @@
     <string name="app_name">NearestRestaurants</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Alert Dialog -->
+    <string name="alert_exit_title">You are going to exit the app</string>
+    <string name="alert_exit_message">Are you sure that you want to exit the application?</string>
+    <string name="alert_exit_positive_button">Yes</string>
+    <string name="alert_exit_negative_button">No</string>
+
     <!-- Main menu -->
     <string name="action_bar_show_list">List</string>
     <string name="action_bar_show_map">Map</string>
