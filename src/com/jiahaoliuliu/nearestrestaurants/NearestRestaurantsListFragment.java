@@ -20,6 +20,7 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnProgressBarShowRequestListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnRefreshRequestedListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
@@ -33,7 +34,7 @@ import com.jiahaoliuliu.nearestrestaurants.session.ErrorHandler.RequestStatus;
  * @author Jiahao Liu
  */
 public class NearestRestaurantsListFragment extends SherlockListFragment
-    implements OnUpdatePositionListener, OnScrollListener {
+    implements OnUpdatePositionListener, OnScrollListener, OnRefreshRequestedListener {
 
     private static final String LOG_TAG = NearestRestaurantsListFragment.class.getSimpleName();
 
@@ -199,4 +200,9 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 		// Do nothing
 	}
 
+	@Override
+	public void refresh() {
+		Log.v(LOG_TAG, "Refresh received");
+		updateRestaurants();
+	}
 }

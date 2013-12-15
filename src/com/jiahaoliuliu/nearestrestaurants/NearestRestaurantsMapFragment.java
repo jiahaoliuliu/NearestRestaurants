@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnProgressBarShowRequestListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnRefreshRequestedListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
@@ -46,7 +47,7 @@ import com.jiahaoliuliu.nearestrestaurants.session.Session;
  *
  */
 public class NearestRestaurantsMapFragment extends Fragment 
-    implements OnUpdatePositionListener {
+    implements OnUpdatePositionListener, OnRefreshRequestedListener {
 
     private static final String LOG_TAG = NearestRestaurantsMapFragment.class.getSimpleName();
     // The time to be wait by default to have Google Place API ready for more results
@@ -191,6 +192,15 @@ public class NearestRestaurantsMapFragment extends Fragment
             drawUsersNewPositionOnMaps();
             updateRestaurants();
         }
+    }
+
+    @Override
+    public void refresh() {
+		Log.v(LOG_TAG, "Refresh received");
+		// Refresh the position of the restaurants
+		// The position of the user is not need to be
+		// refreshed because it is always updated
+    	updateRestaurants();
     }
 
     /**

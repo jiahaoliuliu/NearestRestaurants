@@ -13,6 +13,7 @@
     <!-- Main menu -->
     <string name="action_bar_show_list">List</string>
     <string name="action_bar_show_map">Map</string>
+    <string name="action_bar_refresh">Refresh</string>
     
     <!-- Google Maps -->
     <string name="users_position">Your actual position</string>

@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.Callback;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnProgressBarShowRequestListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnRefreshRequestedListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.session.Session;
 import com.jiahaoliuliu.nearestrestaurants.utils.PositionTracker;
@@ -55,6 +56,7 @@ public class NearestRestaurants extends SherlockFragmentActivity
     // with 0, could cause confusion.
     private static final int MENU_VIEW_LIST_BUTTON_ID = 10000;
     private static final int MENU_VIEW_MAP_BUTTON_ID = 10001;
+    private static final int MENU_VIEW_REFRESH_ID = 10002;
 
     // Session
     private Session session;
@@ -71,6 +73,7 @@ public class NearestRestaurants extends SherlockFragmentActivity
 
     // The interface for the fragment
     private OnUpdatePositionListener onUpdatePositionListener;
+    private OnRefreshRequestedListener onRefreshRequestedListener;
     
     // The dialog used to warning the user that she is going to exit
     private AlertDialog exitAlertDialog;
@@ -181,14 +184,20 @@ public class NearestRestaurants extends SherlockFragmentActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Show the list fragment
-        if (item.getItemId() == MENU_VIEW_LIST_BUTTON_ID) {
-            showListFragment();
-        // Show the map fragment
-        } else if (item.getItemId() == MENU_VIEW_MAP_BUTTON_ID) {
-            showMapFragment();
-        }
-        
+    	// Check the button id
+    	switch (item.getItemId()) {
+    	case MENU_VIEW_LIST_BUTTON_ID:
+    		showListFragment();
+    		break;
+    	case MENU_VIEW_MAP_BUTTON_ID:
+    		showMapFragment();
+    		break;
+    	case MENU_VIEW_REFRESH_ID:
+    		if (onRefreshRequestedListener != null) {
+    			onRefreshRequestedListener.refresh();
+    		}
+    	}
+
         return true;
     }
 
@@ -209,6 +218,13 @@ public class NearestRestaurants extends SherlockFragmentActivity
         	onUpdatePositionListener = (OnUpdatePositionListener)mapFragment;
         } catch (ClassCastException classCastException) {
         	Log.e(LOG_TAG, "The fragment must implements the OnUpdatePositionListener", classCastException);
+        }
+
+        // Update the onRefreshRequestedListener
+        try {
+        	onRefreshRequestedListener = (OnRefreshRequestedListener)mapFragment;
+        } catch (ClassCastException classCastException) {
+        	Log.e(LOG_TAG, "The fragment must implements the OnRefreshRequestedListener", classCastException);
         }
 
         // Modify the action bar menu to adapt it to the map fragment
@@ -240,7 +256,14 @@ public class NearestRestaurants extends SherlockFragmentActivity
 
         // Remove any previous menu item
         actionBarMenu.clear();
+
         // Set the initial state of the menu item
+        // Refresh
+        menuViewListItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_REFRESH_ID, Menu
+                .NONE, getResources().getString(R.string.action_bar_refresh));
+        menuViewListItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+        // Map
         menuViewListItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_LIST_BUTTON_ID, Menu
                 .NONE, getResources().getString(R.string.action_bar_show_list));
         menuViewListItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
@@ -262,6 +285,13 @@ public class NearestRestaurants extends SherlockFragmentActivity
         	onUpdatePositionListener = (OnUpdatePositionListener)listFragment;
         } catch (ClassCastException classCastException) {
         	Log.e(LOG_TAG, "The fragment must implements the OnUpdatePositionListener", classCastException);
+        }
+
+        // Update the onRefreshRequestedListener
+        try {
+        	onRefreshRequestedListener = (OnRefreshRequestedListener)listFragment;
+        } catch (ClassCastException classCastException) {
+        	Log.e(LOG_TAG, "The fragment must implements the OnRefreshRequestedListener", classCastException);
         }
 
         // Modify the action bar menu to adapt it to the map fragment
@@ -294,9 +324,16 @@ public class NearestRestaurants extends SherlockFragmentActivity
         // Remove any previous menu item
         actionBarMenu.clear();
         // Set the initial state of the menu item
+        // Refresh
+        menuViewListItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_REFRESH_ID, Menu
+                .NONE, getResources().getString(R.string.action_bar_refresh));
+        menuViewListItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+        // Map
         menuViewMapItem = actionBarMenu.add(Menu.NONE, MENU_VIEW_MAP_BUTTON_ID, Menu
                 .NONE, getResources().getString(R.string.action_bar_show_map));
         menuViewMapItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
     }
 
     // =============================================== Interfaces =======================================================
