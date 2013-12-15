@@ -382,6 +382,7 @@ public class NearestRestaurantsMapFragment extends Fragment
 	        Marker marker = googleMap.addMarker(
 	                new MarkerOptions()
 	                    .title(restaurant.getName())
+	                    .snippet(restaurant.getVicinity())
 	                    .position(restaurant.getPosition())
 	                    // Use different color for the icon of the restaurant
 	                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))

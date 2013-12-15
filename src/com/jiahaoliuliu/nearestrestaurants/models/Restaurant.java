@@ -26,22 +26,28 @@ public class Restaurant {
 	
 	private LatLng position;
 
+	// Vicinity. A feature of the nearby location
+	private static final String VICINITY_KEY = "vicinity";
+	private String vicinity;
+
 	public Restaurant() {
 		super();
 	}
 
-	public Restaurant(String id, String name, double latitude, double longitude) {
+	public Restaurant(String id, String name, double latitude, double longitude, String vicinity) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.position = new LatLng(latitude, longitude);
+		this.vicinity = vicinity;
 	}
 
-	public Restaurant(String id, String name, LatLng position) {
+	public Restaurant(String id, String name, LatLng position, String vicinity) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.position = position;
+		this.vicinity = vicinity;
 	}
 
 	// Getting the restaurant by JSON.
@@ -76,6 +82,9 @@ public class Restaurant {
 		double latitude = locationJSONObject.getDouble(LATITUDE_KEY);
 		double longitude = locationJSONObject.getDouble(LONGITUDE_KEY);
 		position = new LatLng(latitude, longitude);
+
+		// Get the Vicinity
+		vicinity = jsonObject.getString(VICINITY_KEY);
 	}
 
 	public String getId() {
@@ -102,6 +111,14 @@ public class Restaurant {
 		this.position = position;
 	}
 
+	public String getVicinity() {
+		return vicinity;
+	}
+
+	public void setVicinity(String vicinity) {
+		this.vicinity = vicinity;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -110,6 +127,8 @@ public class Restaurant {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((position == null) ? 0 : position.hashCode());
+		result = prime * result
+				+ ((vicinity == null) ? 0 : vicinity.hashCode());
 		return result;
 	}
 
@@ -137,6 +156,11 @@ public class Restaurant {
 				return false;
 		} else if (!position.equals(other.position))
 			return false;
+		if (vicinity == null) {
+			if (other.vicinity != null)
+				return false;
+		} else if (!vicinity.equals(other.vicinity))
+			return false;
 		return true;
 	}
 
@@ -144,6 +168,7 @@ public class Restaurant {
 	public String toString() {
 		return "Restaurant [id=" + id +
 				", name=" + name + 
-				", position=" + position.latitude + "," + position.longitude  + "]";
+				", position=" + position.latitude + "," + position.longitude  +
+				", vicinity=" + vicinity + "]";
 	}
 }

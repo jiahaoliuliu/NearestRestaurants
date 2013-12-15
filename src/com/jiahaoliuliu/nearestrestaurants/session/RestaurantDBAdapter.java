@@ -22,7 +22,7 @@ public class RestaurantDBAdapter {
 	
 	private static final String DATABASE_NAME = "Reataurants.db";
 	
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 1;
 
 	private static final String DATABASE_TABLE = "restaurant";
 
@@ -31,6 +31,7 @@ public class RestaurantDBAdapter {
 	private static final String KEY_NAME_ID = "name";
 	private static final String KEY_LATITUDE_ID = "latitude";
 	private static final String KEY_LONGITUDE_ID = "longitude";
+	private static final String KEY_VICINITY_ID = "vicinity";
 	
 	private Context context;
 	private SQLiteDatabase database;
@@ -132,7 +133,8 @@ public class RestaurantDBAdapter {
 							   new String[] {KEY_ID,
 											 KEY_NAME_ID,
 											 KEY_LATITUDE_ID,
-											 KEY_LONGITUDE_ID
+											 KEY_LONGITUDE_ID,
+											 KEY_VICINITY_ID
 							                 },
 							    KEY_ID + "=" + id,
 				                null,
@@ -157,7 +159,8 @@ public class RestaurantDBAdapter {
 						   new String[] {KEY_ID,
 										 KEY_NAME_ID,
 										 KEY_LATITUDE_ID,
-										 KEY_LONGITUDE_ID
+										 KEY_LONGITUDE_ID,
+										 KEY_VICINITY_ID
 		                 				},
 							    null,
 				                null,
@@ -177,10 +180,11 @@ public class RestaurantDBAdapter {
 		
 		private String CREATE_TABLE =
 				"create table if not exists " + DATABASE_TABLE + " ( " +
-						                   KEY_ID + " text primary key, " +
-										   KEY_NAME_ID + " text not null, " +
-										   KEY_LATITUDE_ID + " real not null, " +
-										   KEY_LONGITUDE_ID + " real not null);";
+						                   KEY_ID +           " text primary key, " +
+										   KEY_NAME_ID +      " text not null, " +
+										   KEY_LATITUDE_ID +  " real not null, " +
+										   KEY_LONGITUDE_ID + " real not null, " +
+										   KEY_VICINITY_ID +  " text not null);";
 	
 		// Method is called during creation of the database
 		@Override
@@ -231,6 +235,10 @@ public class RestaurantDBAdapter {
 		// Longitude
 		double longitude = restaurant.getPosition().longitude;
 		contentValues.put(KEY_LONGITUDE_ID, longitude);
+		
+		// Vicinity
+		String vicinity = restaurant.getVicinity();
+		contentValues.put(KEY_VICINITY_ID, vicinity);
 
 		return contentValues;
 	}
@@ -259,7 +267,10 @@ public class RestaurantDBAdapter {
 			// Longitude
 			double longitude = mCursor.getDouble(mCursor.getColumnIndex(KEY_LONGITUDE_ID));
 
-			result = new Restaurant(id, name, latitude, longitude);
+			// Vicinity
+			String vicinity = mCursor.getString(mCursor.getColumnIndex(KEY_VICINITY_ID));
+			
+			result = new Restaurant(id, name, latitude, longitude, vicinity);
 		}
 
 		return result;
