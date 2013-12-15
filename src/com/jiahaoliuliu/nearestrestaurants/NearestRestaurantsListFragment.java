@@ -83,13 +83,12 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,  
         Bundle savedInstanceState) {
-        // Set the adapter
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
     public void onActivityCreated(Bundle arg0) {
-        super.onActivityCreated(arg0);      
+        super.onActivityCreated(arg0);
         getListView().setOnScrollListener(this);
     }
 
@@ -149,62 +148,6 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
         }
     }
 
-    /**
-     * The base adapter for the list of the restaurants.
-     */
-    private class RestaurantListAdapter extends BaseAdapter {
-        
-        private Context context;
-        private List<Restaurant> restaurants;
-        private LayoutInflater inflater;
-        
-        public RestaurantListAdapter(Context context, List<Restaurant> restaurants) {
-            this.context = context;
-            this.restaurants = restaurants;
-            inflater = LayoutInflater.from(context);
-        }
-
-        // Reset the list of the restaurants
-        public void setRestaurants(List<Restaurant> restaurants) {
-            this.restaurants = restaurants;
-            notifyDataSetChanged();
-        }
-
-        // Add new restaurants to the list
-        public void addMoreRestaurants(List<Restaurant> newRestaurants) {
-        	this.restaurants.addAll(newRestaurants);
-        	notifyDataSetChanged();
-        }
-
-        @Override
-        public int getCount() {
-            return restaurants.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return restaurants.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup viewGroup) {
-            // No view holder is used because the time restriction
-            View view = inflater.inflate(R.layout.row_layout, null);
-
-            TextView restaurantTextView = (TextView)view.findViewById(R.id.restaurantNameTextView);
-            Restaurant restaurant = restaurants.get(position);
-
-            String name = restaurant.getName();
-            restaurantTextView.setText(name);
-            return view;
-        }
-    }
-
 	@Override
 	public void onScroll(AbsListView view, int firstVisibleItem,
 			int visibleItemCount, int totalItemCount) {
@@ -223,7 +166,7 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 			isLoadingMoreRestaurants = true;
 			// The app is requesting for more data and there is more data available.
 			// Requesting them
-			Toast.makeText(context, R.string.loadin_new_restaurants, Toast.LENGTH_LONG).show();
+			Toast.makeText(context, R.string.loading_new_restaurants, Toast.LENGTH_LONG).show();
 			session.getRestaurantsNearbyNextPage(nextPageToken, new RequestRestaurantsCallback() {
 				
 				@Override

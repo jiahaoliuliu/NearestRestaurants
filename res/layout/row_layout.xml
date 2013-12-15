@@ -2,15 +2,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     >
 
     <TextView
         android:id="@+id/restaurantNameTextView"
-        android:textSize="30sp"
+        android:textSize="@dimen/row_restaurant_name_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Unknown_restaurant"
+        android:text="@string/default_restaurant_name"
+        android:layout_marginTop="@dimen/row_vertical_margin"
+        android:layout_marginLeft="@dimen/row_horizontal_margin"
+        />
+    
+    <TextView
+        android:id="@+id/restaurantVicinityTextView"
+        android:textSize="@dimen/row_restaurant_vicinity_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_restaurant_vicinity"
+        android:layout_marginBottom="@dimen/row_vertical_margin"
+        android:layout_marginLeft="@dimen/row_horizontal_margin"
         />
 
 </LinearLayout>

@@ -4,4 +4,10 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <!-- Row -->
+    <dimen name="row_vertical_margin">10dp</dimen>
+    <dimen name="row_horizontal_margin">10dp</dimen>
+    <dimen name="row_restaurant_name_size">30sp</dimen>
+    <dimen name="row_restaurant_vicinity_size">20sp</dimen>
+    
 </resources>
