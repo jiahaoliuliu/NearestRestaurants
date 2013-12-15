@@ -26,9 +26,9 @@ public class Restaurant {
 	
 	private LatLng position;
 
-	// Vicinity. A feature of the nearby location
+	// Vicinity. A feature of the nearby location. Optional
 	private static final String VICINITY_KEY = "vicinity";
-	private String vicinity;
+	private String vicinity = "";
 
 	public Restaurant() {
 		super();
@@ -84,7 +84,9 @@ public class Restaurant {
 		position = new LatLng(latitude, longitude);
 
 		// Get the Vicinity
-		vicinity = jsonObject.getString(VICINITY_KEY);
+		if (jsonObject.has(VICINITY_KEY)) {
+			vicinity = jsonObject.getString(VICINITY_KEY);
+		}
 	}
 
 	public String getId() {

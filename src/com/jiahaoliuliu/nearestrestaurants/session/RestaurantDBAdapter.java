@@ -184,7 +184,7 @@ public class RestaurantDBAdapter {
 										   KEY_NAME_ID +      " text not null, " +
 										   KEY_LATITUDE_ID +  " real not null, " +
 										   KEY_LONGITUDE_ID + " real not null, " +
-										   KEY_VICINITY_ID +  " text not null);";
+										   KEY_VICINITY_ID +  " text);";
 	
 		// Method is called during creation of the database
 		@Override
