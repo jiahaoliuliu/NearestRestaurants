@@ -4,9 +4,11 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.Window;
 import com.google.android.gms.maps.model.LatLng;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.Callback;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnProgressBarShowRequestListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.session.Session;
 import com.jiahaoliuliu.nearestrestaurants.utils.PositionTracker;
@@ -32,7 +34,7 @@ import android.widget.Toast;
  *
  */
 public class NearestRestaurants extends SherlockFragmentActivity 
-    implements OnPositionRequestedListener {
+    implements OnPositionRequestedListener, OnProgressBarShowRequestListener {
 
     private static final String LOG_TAG = NearestRestaurants.class.getSimpleName();
 
@@ -75,6 +77,7 @@ public class NearestRestaurants extends SherlockFragmentActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+    	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nearest_restaurants_layout);
 
@@ -117,7 +120,7 @@ public class NearestRestaurants extends SherlockFragmentActivity
     @Override
     protected void onPause() {
         super.onPause();
-        
+
         // Disable any indeterminate progress bar
         setSupportProgressBarIndeterminateVisibility(false);
     }
@@ -293,7 +296,17 @@ public class NearestRestaurants extends SherlockFragmentActivity
     public LatLng requestPosition() {
         return myPosition;
     }
+
+    @Override
+	public void showProgressBar() {
+    	setSupportProgressBarIndeterminateVisibility(true);
+    }
     
+    @Override
+	public void hidePorgressBar() {
+    	setSupportProgressBarIndeterminateVisibility(false);
+    }
+
     // =============================================== Others =======================================================
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
