@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnProgressBarShowRequestListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
@@ -38,6 +39,7 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 
     // Interfaces
     private OnPositionRequestedListener onPositionRequestedListener;
+    private OnProgressBarShowRequestListener onProgressBarShowRequestListener;
 
     private Context context;
     private Session session;
@@ -68,6 +70,13 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
             updateRestaurants();
         } catch (ClassCastException classCastException) {
             Log.e(LOG_TAG, "The attached activity must implements the OnPositionRequestedListener", classCastException);
+        }
+
+        // Check the onProgressBarShowRequestListener
+        try {
+        	onProgressBarShowRequestListener = (OnProgressBarShowRequestListener) activity;
+        } catch (ClassCastException classCastException) {
+        	Log.e(LOG_TAG, "The attached activity must implements the OnProgressBarShowRequestListener", classCastException);
         }
     }
 
@@ -208,6 +217,9 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 
 		if (loadMoreRestaurants && moreDataAvailable && !isLoadingMoreRestaurants) {
 			Log.v(LOG_TAG, "Load more restaurants request send and more restaurants are available. Loading.");
+			// Show the progress bar
+			onProgressBarShowRequestListener.showProgressBar();
+			
 			isLoadingMoreRestaurants = true;
 			// The app is requesting for more data and there is more data available.
 			// Requesting them
@@ -218,6 +230,9 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 				public void done(List<Restaurant> newRestaurants, String newNextPageToken,
 						String errorMessage, RequestStatus requestStatus) {
 					isLoadingMoreRestaurants = false;
+					// Disable the progress bar
+					onProgressBarShowRequestListener.hidePorgressBar();
+
 					if (!ErrorHandler.isError(requestStatus)) {
 						nextPageToken = newNextPageToken;
 						restaurantListAdapter.addMoreRestaurants(newRestaurants);
