@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.SupportMapFragment;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnPositionRequestedListener;
+import com.jiahaoliuliu.nearestrestaurants.interfaces.OnProgressBarShowRequestListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.OnUpdatePositionListener;
 import com.jiahaoliuliu.nearestrestaurants.interfaces.RequestRestaurantsCallback;
 import com.jiahaoliuliu.nearestrestaurants.models.Restaurant;
@@ -63,6 +64,7 @@ public class NearestRestaurantsMapFragment extends Fragment
 
     // Interfaces
     private OnPositionRequestedListener onPositionRequestedListener;
+    private OnProgressBarShowRequestListener onProgressBarShowRequestListener;
 
     // Google Map
     private GoogleMap googleMap;
@@ -96,7 +98,14 @@ public class NearestRestaurantsMapFragment extends Fragment
         } catch (ClassCastException classCastException) {
             Log.e(LOG_TAG, "The attached activity must implements the OnPositionRequestedListener", classCastException);
         }
-        
+
+        // Check the onProgressBarShowRequestListener
+        try {
+        	onProgressBarShowRequestListener = (OnProgressBarShowRequestListener) activity;
+        } catch (ClassCastException classCastException) {
+        	Log.e(LOG_TAG, "The attached activity must implements the OnProgressBarShowRequestListener", classCastException);
+        }
+
         this.activity = activity; 
         this.context = activity;
         session = Session.getCurrentSession(context);
@@ -229,6 +238,9 @@ public class NearestRestaurantsMapFragment extends Fragment
             return;
         }
 
+        // Show the progress bar
+        onProgressBarShowRequestListener.showProgressBar();
+
         session.getRestaurantsNearby(myActualPosition, new RequestRestaurantsCallback() {
             
             @Override
@@ -242,6 +254,9 @@ public class NearestRestaurantsMapFragment extends Fragment
                 	drawRestaurantsOnTheMap();
                 	if (nextPageToken != null && !nextPageToken.equalsIgnoreCase("")) {
                 		getMoreRestaurants(nextPageToken);
+                	} else {
+                		// Disable the progress bar
+                		onProgressBarShowRequestListener.hidePorgressBar();
                 	}
                 } else {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
@@ -249,9 +264,13 @@ public class NearestRestaurantsMapFragment extends Fragment
                     // If there is any error about Internet connection but the list of
                     // restaurants has been retrieved offline, draw them on the map
                     if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
-                    		&& restaurants != null) {
+                    		&& newRestaurants != null) {
+                    	restaurants = newRestaurants;
                     	drawRestaurantsOnTheMap();
                     }
+
+                    // Disable the progress bar
+                    onProgressBarShowRequestListener.hidePorgressBar();
                 }
             }
         });
@@ -297,6 +316,9 @@ public class NearestRestaurantsMapFragment extends Fragment
 		    					drawRestaurantsOnTheMap();
 		                    	if (newNextPageToken != null && !newNextPageToken.equalsIgnoreCase("")) {
 		                    		getMoreRestaurants(newNextPageToken);
+		                    	} else {
+		                    		// Disable the progress bar
+		                    		onProgressBarShowRequestListener.hidePorgressBar();
 		                    	}
 		    				} else {
 		                    	// If the request went ok but the data is not valid, then the request
@@ -310,6 +332,8 @@ public class NearestRestaurantsMapFragment extends Fragment
 		                    		} else {
 		                    			// Otherwise reset the number of tries
 		                    			numberTryWaitingGoogleApi = 1;
+			                    		// Disable the progress bar
+			                    		onProgressBarShowRequestListener.hidePorgressBar();
 		                    		}
 		                    	} else {
 		                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
@@ -317,10 +341,13 @@ public class NearestRestaurantsMapFragment extends Fragment
 		                            // If there is any error about Internet connection but the list of
 		                            // restaurants has been retrieved offLine, draw them on the map
 		                            if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
-		                            		&& restaurants != null) {
+		                            		&& newRestaurants != null) {
 		                            	restaurants = newRestaurants;
 		                            	drawRestaurantsOnTheMap();
 		                            }
+
+		                    		// Disable the progress bar
+		                    		onProgressBarShowRequestListener.hidePorgressBar();
 		                    	}
 		    				}
 		    			}
