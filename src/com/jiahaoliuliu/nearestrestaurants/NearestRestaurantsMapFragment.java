@@ -384,7 +384,7 @@ public class NearestRestaurantsMapFragment extends Fragment
 	                    .title(restaurant.getName())
 	                    .position(restaurant.getPosition())
 	                    // Use different color for the icon of the restaurant
-	                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+	                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
 	                );
 	        restaurantMarkers.add(marker);
 	    }
