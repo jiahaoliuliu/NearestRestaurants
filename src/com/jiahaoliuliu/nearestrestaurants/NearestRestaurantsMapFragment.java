@@ -217,6 +217,7 @@ public class NearestRestaurantsMapFragment extends Fragment
         userActualPositionMarker = googleMap.addMarker(new MarkerOptions()
                 .position(myActualPosition)
                 .title(getResources().getString(R.string.users_position))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
                 );
 
         // Check if the users position has been set before
