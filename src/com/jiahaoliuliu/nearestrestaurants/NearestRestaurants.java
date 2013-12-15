@@ -205,7 +205,11 @@ public class NearestRestaurants extends SherlockFragmentActivity
         ft.commit();
 
         // Update the onUpdatePositionListener
-        onUpdatePositionListener = mapFragment;
+        try {
+        	onUpdatePositionListener = (OnUpdatePositionListener)mapFragment;
+        } catch (ClassCastException classCastException) {
+        	Log.e(LOG_TAG, "The fragment must implements the OnUpdatePositionListener", classCastException);
+        }
 
         // Modify the action bar menu to adapt it to the map fragment
         if (actionBarMenu == null) {
@@ -254,8 +258,12 @@ public class NearestRestaurants extends SherlockFragmentActivity
         ft.commit();
         
         // Update the onUpdatePositionListener
-        onUpdatePositionListener = listFragment;
-        
+        try {
+        	onUpdatePositionListener = (OnUpdatePositionListener)listFragment;
+        } catch (ClassCastException classCastException) {
+        	Log.e(LOG_TAG, "The fragment must implements the OnUpdatePositionListener", classCastException);
+        }
+
         // Modify the action bar menu to adapt it to the map fragment
         if (actionBarMenu == null) {
             actionBarMenuCallback = new Callback() {
