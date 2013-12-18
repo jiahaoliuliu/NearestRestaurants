@@ -127,6 +127,8 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
                 } else {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
 
+                    // Remove the next page token saved
+                    nextPageToken = null;
                     // If there is any error about Internet connection but the list of
                     // restaurants has been retrieved offline, draw them on the map
                     if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
@@ -187,8 +189,11 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
 						restaurantListAdapter.addMoreRestaurants(newRestaurants);
 					} else {
 						Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
-						
-	                    // If there is any error about Internet connection but the list of
+
+	                    // Remove the next page token saved
+                    	nextPageToken = null;
+
+                    	// If there is any error about Internet connection but the list of
 	                    // restaurants has been retrieved offLine, reset the list
 	                    if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION
 	                    		&& newRestaurants != null) {
