@@ -56,7 +56,7 @@ public class NearestRestaurantsMapFragment extends Fragment
     //   "There is a short delay between when a next_page_token is issued, and when it will become valid.
     //    Requesting the next page before it is available will return an INVALID_REQUEST response.
     //    Retrying the request with the same next_page_token will return the next page of results."
-    private static final int DEFAULT_MILLISEC_WAIT_GOOGLE_API = 1000;
+    private static final int DEFAULT_MILLISEC_WAIT_GOOGLE_API = 2000;
 
     // The maximum number of tries if with the right Next page token and having
     // Internet connection the Google Place API still returns invalid response.
@@ -245,12 +245,19 @@ public class NearestRestaurantsMapFragment extends Fragment
      */
     private void updateRestaurants() {
         if (myActualPosition == null) {
-            Log.e(LOG_TAG, "Trying to update the list of the restaurants when the position of the user is unknown.");
+            Log.e(LOG_TAG, "Trying to update the restaurants when the position of the user is unknown.");
             return;
         }
 
+        if (session == null) {
+        	Log.w(LOG_TAG, "Trying to update the restaurants when the session is not ready");
+        	return;
+        }
+
         // Show the progress bar
-        onProgressBarShowRequestListener.showProgressBar();
+        if (onProgressBarShowRequestListener != null) {
+        	onProgressBarShowRequestListener.showProgressBar();
+        }
 
         session.getRestaurantsNearby(myActualPosition, new RequestRestaurantsCallback() {
             
