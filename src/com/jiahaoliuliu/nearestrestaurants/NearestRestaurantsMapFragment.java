@@ -341,7 +341,7 @@ public class NearestRestaurantsMapFragment extends Fragment
 		    				} else {
 		                    	// If the request went ok but the data is not valid, then the request
 		    					// has been rejected, try it again
-		                    	if (requestStatus == RequestStatus.ERROR_REQUEST_OK_DATA_INVALID) {
+		                    	if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_DATA_NOT_READY) {
 		                    		if (numberTryWaitingGoogleApi < MAXIMUM_NUMBER_TRY_WAITING_GOOGLE_API) {
 		                    			numberTryWaitingGoogleApi++;
 			                    		// It is important to use the old next page token because in this

@@ -30,8 +30,13 @@
     <!-- Messages -->
     <string name="error_message_google_map_not_found">Google Maps not found. Your device is not compatible with this application.</string>
     <string name="message_request_ok">Response receiverd correctly</string>
-    <string name="error_message_internet_connection">It seems that there is not Internet connection. Displaying the restaurants saved before.</string>
     <string name="error_message_server_generic">It seems that there is some problem with the server. Please try it again later.</string>
-    <string name="error_message_data_invalid">The data received does not seem valid.</string>
-    
+    <string name="error_message_data_not_valid">It seems that the data received from the server is not valid. Please try it again later.</string>
+    <string name="error_message_internet_connection">It seems that there is not Internet connection. Displaying the restaurants saved before.</string>
+    <string name="error_message_zero_results">No result found for your area.</string>
+    <string name="error_message_over_query_limit">The query limit has been reached. Please try it again later.</string>
+    <string name="error_message_request_denied">Your request has been denied by the server. Please inform it to the developer.</string>
+    <string name="error_message_invalid_request">Your request is invalid. Please inform it to the developer.</string>
+    <string name="error_message_data_not_ready">The data on the server is not ready yet. Please try it again later.</string>
+
 </resources>

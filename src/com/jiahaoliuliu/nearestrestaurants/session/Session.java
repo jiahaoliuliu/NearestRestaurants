@@ -141,7 +141,7 @@ public final class Session {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
 						lastPositionKnown = myPosition;
 						final List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
-						addsRestaurantsToTheList(jsonArray, restaurantsList);
+						addRestaurantsToTheList(jsonArray, restaurantsList);
 						requestRestaurantsCallback.done(restaurantsList, extraValue, null, RequestStatus.REQUEST_OK);
 				} else {
 					// If the error is about Internet connection, calculate the possible restaurants within the 
@@ -169,7 +169,7 @@ public final class Session {
 		if (nextPageToken == null || nextPageToken.equalsIgnoreCase("")) {
 			Log.e(LOG_TAG, "Error trying to get the next page of restaurnats nearby."
 					+ " The next page token is null");
-			requestRestaurantsCallback.done(null, null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+			requestRestaurantsCallback.done(null, null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_NOT_VALID);
 			return;
 		}
 
@@ -179,7 +179,7 @@ public final class Session {
 			public void done(JSONArray jsonArray, String newNextPageToken, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					final List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
-					addsRestaurantsToTheList(jsonArray, restaurantsList);
+					addRestaurantsToTheList(jsonArray, restaurantsList);
 					requestRestaurantsCallback.done(restaurantsList, newNextPageToken, null, RequestStatus.REQUEST_OK);
 				} else {
 					// If the error is about Internet connection, calculate the possible restaurants within the 
@@ -300,7 +300,7 @@ public final class Session {
 		return restaurantsList;
 	}
 
-	private void addsRestaurantsToTheList(JSONArray jsonArray, List<Restaurant> restaurantsList) {
+	private void addRestaurantsToTheList(JSONArray jsonArray, List<Restaurant> restaurantsList) {
 		// Parse the list of the restaurants
 		for (int i = 0; i < jsonArray.length(); i++) {
 			try {

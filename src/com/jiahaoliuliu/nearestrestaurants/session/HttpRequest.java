@@ -216,17 +216,34 @@ public class HttpRequest {
 	                                	// Check the status
 	                                	if (jsonObject.has("status")) {
 	                                		String resultStatus = jsonObject.getString("status");
+	                                		
+	                                		// Check for status code
 	                                		// If the result status is not ok, then something went wrong
 	                                		if (!resultStatus.equalsIgnoreCase("OK")) {
 	                                			Log.e(LOG_TAG, "The result returned is not ok " + resultStatus);
-	                                			// Check for request status and result Status.
-	                                			// If Request status is REQUEST_OK and the result status is INVALID_REQUEST,
-	                                			// then the error is because the app is requesting a second page when it is not
-	                                			// ready. In that case returns a different error
-	    	                                	if (requestStatus == RequestStatus.REQUEST_OK && resultStatus.equalsIgnoreCase("INVALID_REQUEST")) {
-	    	                                		jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_OK_DATA_INVALID);
+	                                			
+	                                			// Zero results
+	                                			if (resultStatus.equalsIgnoreCase("ZERO_RESULTS")) {
+	                                				jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_ZERO_RESULTS);
+	                                			// Over query limit
+	                                			} else if (resultStatus.equalsIgnoreCase("OVER_QUERY_LIMIT")) {
+	                                				jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_OVER_QUERY_LIMIT);
+	                                			// Request denied
+	                                			} else if (resultStatus.equalsIgnoreCase("REQUEST_DENIED")) {
+	                                				jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_REQUEST_DENIED);
+	                                			// Invalid request
+	                                			} else if (resultStatus.equalsIgnoreCase("INVALID_REQUEST")) {
+		                                			// If Request status is REQUEST_OK and the result status is INVALID_REQUEST,
+		                                			// then the error is because the app is requesting a second page when it is not
+		                                			// ready. In that case returns a different error
+		    	                                	if (requestStatus == RequestStatus.REQUEST_OK) {
+		    	                                		jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_NOT_READY);
+		    	                                	} else {
+		    	                                		jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_INVALID_REQUEST);
+		    	                                	}
+		    	                                // Other errors
 	    	                                	} else {	
-		                                			jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+		                                			jsonHandler.done(null, null, RequestStatus.ERROR_SERVER_GENERIC);
 	    	                                	}
 	                                			return;
 	                                		}
@@ -234,7 +251,7 @@ public class HttpRequest {
 	                                		// if the result is not found, return error
 	                                		if (!jsonObject.has("results")) {
 	                                			Log.e(LOG_TAG, "The results does not exist");
-	                                			jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                			jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_NOT_VALID);
 	                                			return;
 	                                		}
 	                                		
@@ -251,7 +268,7 @@ public class HttpRequest {
 	                                	// if the status does not exists, then there must be some data error
 	                                	} else {
 	                                		Log.e(LOG_TAG, "The status does not exist.");
-	                                		jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_VALIDATION);
+	                                		jsonHandler.done(null, null, RequestStatus.ERROR_REQUEST_NOK_DATA_NOT_VALID);
 	                                	}
 	                                } else {
 	                                	jsonHandler.done(null, null, requestStatus);
