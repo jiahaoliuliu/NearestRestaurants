@@ -133,13 +133,15 @@ public final class Session {
 
 	public void getRestaurantsNearby(final LatLng myPosition,
 			final RequestRestaurantsCallback requestRestaurantsCallback) {
+		// Update the user's position
+		lastPositionKnown = myPosition;
+
 		service.getRestaurantsNearby(myPosition, new RequestJSONCallback() {
 
 			@Override
 			public void done(JSONArray jsonArray, final String extraValue, RequestStatus requestStatus) {
 				if (!ErrorHandler.isError(requestStatus)) {
 					Log.v(LOG_TAG, "The list of the restaurants has been returned correctly");
-						lastPositionKnown = myPosition;
 						final List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
 						addRestaurantsToTheList(jsonArray, restaurantsList);
 						requestRestaurantsCallback.done(restaurantsList, extraValue, null, RequestStatus.REQUEST_OK);
@@ -147,7 +149,7 @@ public final class Session {
 					// If the error is about Internet connection, calculate the possible restaurants within the 
 					// range and return it to the caller
 					if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION) {
-						List<Restaurant> restaurantsNearsOffline = getNearRestaurants(myPosition);
+						List<Restaurant> restaurantsNearsOffline = getNearRestaurants();
 						requestRestaurantsCallback.done(restaurantsNearsOffline,
 								null,
 								ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
@@ -185,7 +187,7 @@ public final class Session {
 					// If the error is about Internet connection, calculate the possible restaurants within the 
 					// range and return it to the caller
 					if (requestStatus == RequestStatus.ERROR_REQUEST_NOK_HTTP_NO_CONNECTION) {
-						List<Restaurant> restaurantsNearsOffline = getNearRestaurants(lastPositionKnown);
+						List<Restaurant> restaurantsNearsOffline = getNearRestaurants();
 						requestRestaurantsCallback.done(restaurantsNearsOffline,
 								null,
 								ErrorHandler.parseRequestStatus(context, jsonArray, requestStatus),
@@ -240,18 +242,22 @@ public final class Session {
 
     public LatLng getLastUserPosition() {
 
-    	Double latitude = preferences.getDouble(DoubleId.LAST_USER_POSITION_LATITUDE);
-    	Double longitude = preferences.getDouble(DoubleId.LAST_USER_POSITION_LONGITUDE);
+    	if (lastPositionKnown == null) {
+	    	Double latitude = preferences.getDouble(DoubleId.LAST_USER_POSITION_LATITUDE);
+	    	Double longitude = preferences.getDouble(DoubleId.LAST_USER_POSITION_LONGITUDE);
     	
-    	if (latitude != null && longitude != null) {
-    		return new LatLng(latitude, longitude);
-    	} else {
-    		Log.w(LOG_TAG, "The user position is not set");
-    		return null;
+	    	if (latitude != null && longitude != null) {
+	    		lastPositionKnown = new LatLng(latitude, longitude);
+	    	}
     	}
+
+    	return lastPositionKnown;
     }
 
     public void setLastUserPosition(LatLng userPosition) {
+    	// Update the user's last position
+    	lastPositionKnown = userPosition;
+
     	preferences.setDouble(DoubleId.LAST_USER_POSITION_LATITUDE, userPosition.latitude);
     	preferences.setDouble(DoubleId.LAST_USER_POSITION_LONGITUDE, userPosition.longitude);
     }
@@ -272,16 +278,19 @@ public final class Session {
 	 * @param myPosition The actual position of the user
 	 * @return           A list of restaurants whom are in the range which the center is the users position
 	 */
-	private List<Restaurant> getNearRestaurants(LatLng myPosition) {
+	private List<Restaurant> getNearRestaurants() {
+		Log.v(LOG_TAG, "Getting near restaurants offline by the last known position ");
 		List<Restaurant> restaurantsList = new ArrayList<Restaurant>();
-		if (myPosition == null) {
+		if (lastPositionKnown == null) {
 			Log.e(LOG_TAG, "Error trying to get the list of near restaurants when the user's position is null");
 			return restaurantsList;
 		}
+		
+		Log.v(LOG_TAG, "My position is " + lastPositionKnown.latitude + " ," + lastPositionKnown.longitude);
 
 		Location myLocation = new Location("");
-		myLocation.setLatitude(myPosition.latitude);
-		myLocation.setLongitude(myPosition.longitude);
+		myLocation.setLatitude(lastPositionKnown.latitude);
+		myLocation.setLongitude(lastPositionKnown.longitude);
 
 		Set<String> ids = restaurants.keySet();
 		for (String id: ids) {
