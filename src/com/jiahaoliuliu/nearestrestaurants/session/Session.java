@@ -292,7 +292,9 @@ public final class Session {
 			restaurantLocation.setLatitude(restaurantPosition.latitude);
 			restaurantLocation.setLongitude(restaurantPosition.longitude);
 			
-			if (((int)restaurantLocation.distanceTo(myLocation)) <= DEFAULT_RANGE ) {
+			int distance = (int)restaurantLocation.distanceTo(myLocation);
+			Log.v(LOG_TAG, "The distance to my location is " + distance + " " + restaurant.getName());
+			if (distance <= DEFAULT_RANGE ) {
 				restaurantsList.add(restaurant);
 			}
 		}
