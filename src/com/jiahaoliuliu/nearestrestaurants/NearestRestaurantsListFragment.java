@@ -98,7 +98,7 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
         myActualPosition = newPosition;
         updateRestaurants();
     }
-    
+
     /**
      * Update the list of the restaurants based on the position of the user
      */
@@ -106,6 +106,11 @@ public class NearestRestaurantsListFragment extends SherlockListFragment
         if (myActualPosition == null) {
             Log.e(LOG_TAG, "Trying to update the list of the restaurants when the position of the user is unknown.");
             return;
+        }
+
+        if (session == null) {
+        	Log.w(LOG_TAG, "Trying to upate the list of the restaurants when the session is not ready");
+        	return;
         }
 
         session.getRestaurantsNearby(myActualPosition, new RequestRestaurantsCallback() {
